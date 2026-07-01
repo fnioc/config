@@ -46,6 +46,32 @@ describe("CommandLineSource -- long form (--Key)", () => {
 
     expect(() => source.load()).toThrow();
   });
+
+  test("a valueless switch followed by another --switch is boolean-true, not corrupted", () => {
+    // `--Verbose --Port 8080`: without a guard, `--Verbose` swallows the
+    // following `--Port` token as its value -> {Verbose: "--Port"} and Port
+    // is dropped entirely, corrupting both flags. A switch whose next token
+    // is itself a long switch has no value -- treat it as a boolean flag
+    // ("true", so downstream boolean coercion binds it to `true`).
+    const source = new CommandLineSource(["--Verbose", "--Port", "8080"]);
+
+    expect(source.load()).toEqual({ Verbose: "true", Port: "8080" });
+  });
+
+  test('a lone "--" terminates option parsing (standard argv convention)', () => {
+    // `--` is the end-of-options marker: everything after it is positional
+    // (and this source ignores positionals). It must not be treated as an
+    // empty-key long switch that swallows the following token.
+    const source = new CommandLineSource([
+      "--Key",
+      "value",
+      "--",
+      "--NotASwitch",
+      "ignored",
+    ]);
+
+    expect(source.load()).toEqual({ Key: "value" });
+  });
 });
 
 describe("CommandLineSource -- short form (-x)", () => {
