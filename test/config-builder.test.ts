@@ -5,6 +5,7 @@
 // merge of the original nested inputs).
 
 import { afterEach, describe, expect, test } from "bun:test";
+import { bindConfig } from "../src/bind.js";
 import { ConfigBuilder } from "../src/config-builder.js";
 
 const FIXTURES = "test/fixtures/config-builder";
@@ -49,6 +50,28 @@ describe("ConfigBuilder.build layering", () => {
     expect(config.get("Server:Port")).toBe("7070");
     // Still untouched -- env source didn't set this key.
     expect(config.get("Server:Host")).toBe("localhost");
+  });
+
+  test("a conventionally-uppercase environment variable overrides a differently-cased JSON key", () => {
+    // .NET-style usage (and this package's own README/example): env vars are
+    // conventionally UPPERCASE while JSON keys retain their natural casing.
+    // The merge must be case-folding so the later (env) source truly
+    // overwrites the earlier (JSON) one instead of both coexisting.
+    setEnv("FNIOC_TEST_BUILDER_SERVER__PORT", "9999");
+
+    const config = new ConfigBuilder()
+      .addJsonFile(`${FIXTURES}/server-port-only.json`)
+      .addEnvironmentVariables("FNIOC_TEST_BUILDER_")
+      .build();
+
+    // Only one casing of the key should survive the merge.
+    const portKeys = config.keys().filter((key) => key.toLowerCase() === "server:port");
+    expect(portKeys).toHaveLength(1);
+
+    // And bindConfig must see the overridden value, not the JSON one.
+    expect(
+      bindConfig<{ port: number }>(config, { port: "number" }, { section: "Server" }).port,
+    ).toBe(9999);
   });
 
   test("command line overrides both JSON and environment variables", () => {
