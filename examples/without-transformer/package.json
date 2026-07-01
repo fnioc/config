@@ -1,0 +1,20 @@
+{
+  "name": "@fnioc-config-examples/without-transformer",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Runnable @fnioc/config example with NO ts-patch transformer -- explicit tokens, hand-written dependency metadata, and a SchemaFor<T>-checked hand-written bind schema.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@fnioc/di": "^6.0.0",
+    "@fnioc/config": "^0.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

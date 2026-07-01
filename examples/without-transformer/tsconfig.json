@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+    // No "plugins" entry -- plain tsc, no transformer at all. That's the point
+    // of this example: SchemaFor<T> gives real compile-time checking on the
+    // hand-written schema without a build step.
+  },
+  "include": ["src/**/*"]
+}

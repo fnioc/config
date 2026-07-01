@@ -1,0 +1,22 @@
+{
+  "name": "@fnioc-config-examples/with-transformer",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Runnable @fnioc/config example using the @fnioc/config ts-patch transformer (type-driven config registration).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tspc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@fnioc/di": "^6.0.0",
+    "@fnioc/config": "^0.0.0"
+  },
+  "devDependencies": {
+    "@fnioc/transformer": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "ts-patch": "^3.3.0",
+    "typescript": "^5.9.0"
+  }
+}

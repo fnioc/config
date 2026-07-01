@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    // Both transformers, chained. @fnioc/transformer lowers add<I>(C)/.as<"x">();
+    // @fnioc/config lowers addConfig<T>(...). Order doesn't matter here -- each
+    // only rewrites call sites naming its own method, and both derive tokens the
+    // same way (@fnioc/config imports @fnioc/transformer's deriveToken/tokenForType).
+    // OPEN QUESTION (flagged, not decided): whether @fnioc/config ships this
+    // transformer from the SAME package as its runtime (like this sketch assumes)
+    // or splits into @fnioc/config + @fnioc/config-transformer the way ioc splits
+    // @fnioc/di + @fnioc/transformer (so plain runtime consumers don't pull in
+    // `typescript` as a dependency). Deferred past this review.
+    "plugins": [
+      { "transform": "@fnioc/transformer", "import": "transform" },
+      { "transform": "@fnioc/config", "import": "transformer" }
+    ]
+  },
+  "include": ["src/**/*"]
+}

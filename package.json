@@ -2,6 +2,7 @@
   "name": "__PACKAGE_NAME__",
   "version": "0.0.0",
   "description": "__DESCRIPTION__",
+  "workspaces": ["examples/*"],
   "scripts": {
     "build": "echo 'TODO: add build command' && exit 1",
     "test": "echo 'TODO: add test command' && exit 1",
