@@ -77,6 +77,35 @@ describe("ConfigurationRoot.getSection", () => {
     expect(section.keys()).toEqual(["Primary"]);
   });
 
+  test("matches the section prefix case-insensitively", () => {
+    // A single section legitimately holds keys of differing casings once
+    // layered from multiple sources -- e.g. a conventionally-UPPERCASE env
+    // var (SERVER:HOST) beside a natural-case CLI/JSON key (Server:Port).
+    // Section resolution must be case-insensitive (mirroring .NET's
+    // IConfiguration and the rest of this package -- ConfigBuilder's merge
+    // and bindConfig's key matching both case-fold), otherwise a
+    // case-sensitive prefix match silently drops the differently-cased keys
+    // and a section bind fails with a spurious "missing required key".
+    const root = new ConfigurationRoot(
+      new Map([
+        ["SERVER:HOST", "0.0.0.0"],
+        ["Server:Port", "8080"],
+      ]),
+    );
+
+    const server = root.getSection("Server");
+
+    // Both keys survive despite the queried "Server" matching "SERVER" and
+    // "Server" alike. Stripped keys keep their source casing; downstream leaf
+    // lookups are case-insensitive so that doesn't matter to callers.
+    expect([...server.keys()].map((key) => key.toLowerCase()).sort()).toEqual([
+      "host",
+      "port",
+    ]);
+    expect(server.get("HOST")).toBe("0.0.0.0");
+    expect(server.get("Port")).toBe("8080");
+  });
+
   test("an unmatched prefix returns an empty, but still usable, root", () => {
     const root = new ConfigurationRoot(new Map([["Server:Port", "8080"]]));
 

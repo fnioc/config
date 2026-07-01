@@ -47,6 +47,14 @@ export class CommandLineSource implements ConfigSource {
         continue;
       }
 
+      // A lone "--" is the standard end-of-options marker: everything after
+      // it is positional (and this source ignores positionals). Stop parsing
+      // rather than treating "--" as an empty-key long switch that swallows
+      // the following token.
+      if (token === "--") {
+        break;
+      }
+
       if (token.startsWith("--")) {
         i = this.consumeLongSwitch(token, argv, i, result);
         continue;
@@ -84,6 +92,17 @@ export class CommandLineSource implements ConfigSource {
       throw new Error(
         `Missing value for command-line switch "${token}" -- expected "${token} <value>" or "${token}=<value>"`,
       );
+    }
+
+    // If the next token is itself a long switch (`--Foo`), this switch has no
+    // value of its own -- treat it as a valueless boolean flag ("true")
+    // rather than consuming the following switch, which would corrupt both
+    // (`["--Verbose", "--Port", "8080"]` -> {Verbose: "--Port"}, Port lost).
+    // Restricting the guard to `--` deliberately leaves negative-number
+    // values (e.g. `--Offset -5`) intact.
+    if (value.startsWith("--")) {
+      result[rest] = "true";
+      return index;
     }
 
     result[rest] = value;

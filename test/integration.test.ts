@@ -51,7 +51,13 @@ describe("end-to-end: ConfigBuilder -> bindConfig -> DI resolution", () => {
   test("resolves a constructor-injected ApiServer and two section-bound DatabaseConfig instances", () => {
     // Same layering the example demonstrates: JSON base <- JSON dev overlay
     // <- env vars (APP_ prefix) <- CLI args, last-registered-wins per key.
-    setEnv("APP_Server__Host", "0.0.0.0");
+    // The env name is deliberately conventional UPPERCASE (APP_SERVER__HOST)
+    // while appsettings.json keeps its natural "Server:Host" casing -- so this
+    // end-to-end path also locks in the case-folding override guarantee.
+    // Without it, both Server:Host (JSON, 127.0.0.1) and SERVER:HOST (env,
+    // 0.0.0.0) would survive the merge and the section bind would resolve the
+    // stale JSON host, failing the describe() assertion below.
+    setEnv("APP_SERVER__HOST", "0.0.0.0");
 
     const config = new ConfigBuilder()
       .addJsonFile(`${EXAMPLE_DIR}/appsettings.json`)

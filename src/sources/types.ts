@@ -40,13 +40,23 @@ export class ConfigurationRoot {
    * `${prefix}:`, with that prefix (and its trailing colon) stripped from
    * each returned key. A key that exactly equals `prefix` (no trailing
    * colon) is not itself a member of the section and is excluded.
+   *
+   * Prefix matching is case-insensitive, mirroring .NET's `IConfiguration`
+   * and the rest of this package (ConfigBuilder's merge and bindConfig's key
+   * matching both case-fold). This matters once a section is layered from
+   * multiple sources: an UPPERCASE env `SERVER:HOST` and a natural-case CLI
+   * `Server:Port` are the same `Server` section, and a case-sensitive prefix
+   * match would silently drop whichever keys don't match the queried casing.
+   * Stripped keys retain their source casing; leaf lookups downstream are
+   * themselves case-insensitive.
    */
   public getSection(prefix: string): ConfigurationRoot {
     const scopePrefix = `${prefix}:`;
+    const foldedPrefix = scopePrefix.toLowerCase();
     const scoped = new Map<string, string>();
 
     for (const [key, value] of this.data) {
-      if (key.startsWith(scopePrefix)) {
+      if (key.toLowerCase().startsWith(foldedPrefix)) {
         scoped.set(key.slice(scopePrefix.length), value);
       }
     }

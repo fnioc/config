@@ -52,6 +52,38 @@ describe("ConfigBuilder.build layering", () => {
     expect(config.get("Server:Host")).toBe("localhost");
   });
 
+  test("a conventionally-uppercase env var overrides a JSON key across a layered (base+overlay) merge", () => {
+    // Broadens #5's single-JSON-file regression to the layered stack this
+    // package is built around: base.json sets Server:Port, overlay.json
+    // rewrites it (still natural-cased), then an UPPERCASE env var must still
+    // override the merged JSON key rather than coexisting with it. Without a
+    // case-folding merge, both Server:Port (JSON) and SERVER:PORT (env) would
+    // survive side by side and a case-insensitive bind could resolve to the
+    // stale JSON value. Uses uppercase deliberately -- the sibling
+    // "environment variables override JSON" test above only exercises the
+    // matching-case path.
+    setEnv("FNIOC_TEST_BUILDER_SERVER__PORT", "7070");
+
+    const config = new ConfigBuilder()
+      .addJsonFile(`${FIXTURES}/base.json`)
+      .addJsonFile(`${FIXTURES}/overlay.json`)
+      .addEnvironmentVariables("FNIOC_TEST_BUILDER_")
+      .build();
+
+    // Only one casing of the key survives the case-folding merge.
+    const portKeys = config.keys().filter((key) => key.toLowerCase() === "server:port");
+    expect(portKeys).toHaveLength(1);
+
+    // The env value wins over the merged JSON value, seen through a
+    // case-insensitive section bind.
+    expect(
+      bindConfig<{ port: number }>(config, { port: "number" }, { section: "Server" }).port,
+    ).toBe(7070);
+
+    // A key the env source didn't touch still resolves from JSON.
+    expect(config.get("Server:Host")).toBe("localhost");
+  });
+
   test("a conventionally-uppercase environment variable overrides a differently-cased JSON key", () => {
     // .NET-style usage (and this package's own README/example): env vars are
     // conventionally UPPERCASE while JSON keys retain their natural casing.

@@ -125,6 +125,36 @@ describe("bindConfig", () => {
     }
   });
 
+  test("a non-finite numeric raw value (Infinity/-Infinity/overflow) is rejected, not coerced", () => {
+    // `Number("Infinity")`, `Number("-Infinity")`, and an overflowing literal
+    // like `Number("1e400")` all evaluate to a non-NaN but non-finite value.
+    // A `!Number.isNaN(n)` validity guard would wave them straight through as
+    // valid numbers -- but a port (or any config number) of Infinity is never
+    // what the operator meant. They must land on the same invalid-number path
+    // as any other unparseable value.
+    for (const bad of ["Infinity", "-Infinity", "1e400"]) {
+      const root = new ConfigurationRoot(
+        new Map([
+          ["Host", "localhost"],
+          ["Port", bad],
+          ["Enabled", "true"],
+          ["Nested:Value", "hello"],
+        ]),
+      );
+
+      try {
+        bindConfig<ServerConfig>(root, serverSchema);
+        throw new Error(`expected bindConfig to throw for Port="${bad}"`);
+      } catch (err) {
+        expect(err).toBeInstanceOf(ConfigBindError);
+        const bindErr = err as ConfigBindError;
+        expect(bindErr.issues.length).toBe(1);
+        expect(bindErr.issues[0]).toContain("port");
+        expect(bindErr.issues[0]).toContain(bad);
+      }
+    }
+  });
+
   test("an unrecognized raw value for a boolean field is recorded as an issue", () => {
     const root = new ConfigurationRoot(
       new Map([

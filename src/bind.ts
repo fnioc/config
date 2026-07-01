@@ -131,7 +131,12 @@ function coerceLeaf(
         return undefined;
       }
       const n = Number(raw);
-      if (Number.isNaN(n)) {
+      // `Number.isFinite`, not `!Number.isNaN`: `Number("Infinity")`,
+      // `Number("-Infinity")`, and an overflowing literal like
+      // `Number("1e400")` (=== Infinity) are all non-NaN, so a NaN-only guard
+      // would accept them as valid numbers. A non-finite config number is
+      // never intended -- reject it down the same aggregate-error path.
+      if (!Number.isFinite(n)) {
         issues.push(`invalid number for "${fullPath}": "${raw}"`);
         return undefined;
       }
