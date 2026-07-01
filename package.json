@@ -1,11 +1,32 @@
 {
-  "name": "__PACKAGE_NAME__",
+  "name": "@fnioc/config",
   "version": "0.0.0",
-  "description": "__DESCRIPTION__",
+  "description": "Constructor-injectable, layered configuration binding for @fnioc/di -- JSON/env/CLI sources, compile-time-checked binding via SchemaFor<T>, zero required build step.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "echo 'TODO: add build command' && exit 1",
-    "test": "echo 'TODO: add test command' && exit 1",
-    "lint": "echo 'TODO: add lint command' && exit 1"
+    "build": "tsc -p tsconfig.json",
+    "test": "bun test",
+    "lint": "tsc -p tsconfig.lint.json"
+  },
+  "dependencies": {
+    "@fnioc/di": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/node": "^24.13.2",
+    "typescript": "^6.0.3"
   },
   "publishConfig": {
     "access": "public",

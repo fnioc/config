@@ -7,9 +7,9 @@
 [hooks]
 enter = "git config core.hooksPath .githooks"
 
-# Pin Node here, e.g.:
-#   node = "20"
 [tools]
+node = "24"
+bun = "latest"
 
 # Common tasks. Optional — wire up your own as your project needs.
 # [tasks.build]
