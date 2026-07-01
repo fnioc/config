@@ -61,14 +61,34 @@ export class ConfigBuilder {
   /**
    * Loads every registered source in registration order and merges their
    * flat maps key by key, with later sources overwriting earlier ones.
+   *
+   * The merge is case-folding -- matching .NET's `IConfiguration`, which
+   * this package otherwise mirrors throughout (see e.g. bindConfig's
+   * case-insensitive property matching). Sources are free to use whatever
+   * casing is natural to them (JSON keeps the file's casing; env vars are
+   * conventionally UPPERCASE), so a later source's key must overwrite an
+   * earlier one's even when the two differ only in case -- otherwise both
+   * survive side by side in the merged map and later lookups can silently
+   * resolve to the earlier (stale) value instead of the intended override.
    */
   public build(): ConfigurationRoot {
     const merged = new Map<string, string>();
+    // Tracks, per case-folded key, the actually-cased key currently stored
+    // in `merged` -- so a same-key-different-casing write from a later
+    // source can find and remove the earlier entry instead of coexisting
+    // with it.
+    const caseFold = new Map<string, string>();
 
     for (const source of this.sources) {
       const data = source.load();
       for (const [key, value] of Object.entries(data)) {
+        const folded = key.toLowerCase();
+        const existingKey = caseFold.get(folded);
+        if (existingKey !== undefined && existingKey !== key) {
+          merged.delete(existingKey);
+        }
         merged.set(key, value);
+        caseFold.set(folded, key);
       }
     }
 
