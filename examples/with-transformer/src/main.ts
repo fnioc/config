@@ -19,12 +19,31 @@ import { ConfigBuilder } from "@fnioc/config";
 import type { DatabaseConfig, IApiServer, IDatabasePool, ServerConfig } from "./contracts.js";
 import { ApiServer, DatabasePool } from "./services.js";
 
-// Layered sources. Each source flattens its own input into a flat,
-// colon-delimited key->value map; lookup goes back-to-front, LAST-registered
-// source wins PER KEY. Env vars map `APP_SERVER__HOST` -> strip the "APP_"
-// prefix -> `__` becomes `:` -> "Server:Host" (the .NET convention -- env
-// vars can't contain `:` on every platform). CLI switch mappings are
-// explicit; an unmapped short switch (`-x`) is a hard parse-time error.
+// Layered sources -- a behavioral analogue of Microsoft.Extensions.Configuration
+// (MEC), not a literal port; several signatures are intentionally reshaped for
+// TS (options objects instead of positional bools / IDictionary). Each source
+// flattens its own input into a flat, colon-delimited key->value map; lookup
+// goes back-to-front at READ time (never eagerly pre-merged at .build() --
+// each provider is walked in reverse-registration order per key, same as
+// MEC's IConfigurationRoot). LAST-registered source wins PER KEY.
+//
+// Env vars: `APP_SERVER__HOST` -> strip the "APP_" prefix -> `__` becomes `:`
+// -> stored as `SERVER:HOST`, case PRESERVED as-is (no re-casing to
+// `Server:Host` -- MEC doesn't do that either). It still matches the
+// `Server:Host` section key at bind time because ALL config key lookups here
+// are case-insensitive, same as MEC -- `bindConfig` matches schema keys
+// case-insensitively against the flat map for exactly this reason.
+//
+// CLI: `--key value` / `--key=value` map into the same delimited grammar; an
+// unmapped short switch (`-x`) is a hard error at .build() time (MEC throws at
+// Load/Build time too). MEC also accepts `/key value` (a Windows/cmd.exe
+// convention) -- deliberately not supported here, there's no Node-ecosystem
+// expectation for it.
+//
+// NOT modeled here (deferred, not overlooked): MEC's `AddJsonFile` also takes
+// a `reloadOnChange` flag tied to `IChangeToken`-based file-watch reload --
+// that's exactly the live-reload design deferred to
+// https://github.com/fnioc/config/issues/1, not part of this MVP sketch.
 const config = new ConfigBuilder()
   .addJsonFile("appsettings.json")
   .addJsonFile("appsettings.Development.json", { optional: true })

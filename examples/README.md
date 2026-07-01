@@ -30,9 +30,20 @@ CLI args, layered last-source-wins-per-key.
 3. **Named instances reuse the EXISTING `Inject<T,"tok">` brand** -- no new
    "named options" mechanism, matching how `addConfig` gets an explicit-token
    overload exactly like `add(token, C)` already has.
-4. **Layered sources, not deep merge.** Each source (JSON/env/CLI) flattens
-   independently to a colon-delimited flat map; the LAST registered source
-   wins PER KEY.
+4. **Layered sources, not deep merge -- a behavioral analogue of
+   Microsoft.Extensions.Configuration (MEC), not a literal port.** Each source
+   (JSON/env/CLI) flattens independently to a colon-delimited flat map; lookup
+   walks providers back-to-front at READ time (never eagerly pre-merged at
+   `.build()`, matching `IConfigurationRoot`'s real behavior), LAST-registered
+   source winning PER KEY. Key matching is case-INSENSITIVE throughout (MEC
+   does this too) -- an env var `APP_SERVER__HOST` is stored as `SERVER:HOST`
+   verbatim, not re-cased to `Server:Host`; it still binds to a `host` field
+   because lookups ignore case, not because of any normalization step.
+   Deliberately NOT modeled: MEC's `AddJsonFile(reloadOnChange:)` (folded into
+   the deferred live-reload design,
+   [fnioc/config#1](https://github.com/fnioc/config/issues/1)) and MEC's
+   `/key value` slash-prefixed CLI switches (a Windows/cmd.exe convention with
+   no Node-ecosystem expectation).
 5. **The plugin-less path is fully type-safe, not a degraded fallback.**
    `SchemaFor<T>` (a plain exported mapped type, no codegen involved) checks
    a hand-written bind schema against the interface's actual shape at compile
