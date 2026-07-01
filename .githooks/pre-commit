@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Fast pre-commit gate: type-checks the project via `tsc --noEmit`.
+# Skipped silently if npm isn't on PATH (e.g. a non-mise shell) so commits
+# never hard-fail on a missing toolchain -- run
+# `eval "$(mise activate bash)"` (or zsh) to bring it in.
+set -e
+if command -v npm >/dev/null 2>&1; then
+  npm run lint --silent
+fi

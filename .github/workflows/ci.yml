@@ -28,11 +28,16 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+      # `npm test` shells out to `bun test` (see package.json) -- GitHub's
+      # ubuntu-latest runner image ships Node but not Bun, so it has to be
+      # installed explicitly or every run fails on "bun: command not found".
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - run: npm ci
-      # TODO: add your lint, test, and build steps:
-      # - run: npm run lint
-      # - run: npm test
-      # - run: npm run build
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
 
   # ── Publish @next ─────────────────────────────────────────────────────────
   # Runs on every push to main. Uses semantic-release to determine the version

@@ -1,68 +1,124 @@
-# npm
+# @fnioc/config
 
-A GitHub template for projects that publish to **npm**, with:
+Constructor-injectable, layered configuration for [`@fnioc/di`](https://www.npmjs.com/package/@fnioc/di) — JSON files, environment variables, and CLI arguments layered into one configuration root, bound into a typed value via a schema that's checked against your interface at compile time. **No build step is required to use any of this.**
 
-- **OIDC trusted publishing** — no `NPM_TOKEN` secret; the workflow auths to
-  npm via GitHub Actions' OIDC identity, configured per-package and per-workflow.
-- **npm provenance** — every published version carries a verifiable build
-  attestation linking the artifact to this repo + the exact workflow run.
-- **`@next` → `@latest` promotion** — every PR merge publishes a `@next`
-  pre-release automatically; you promote to `@latest` manually through a
-  reviewer-gated workflow when the version is ready for general consumption.
+## Why
 
-## What you get
+Config in a DI-shaped app has to end up as a plain constructor argument — something like `constructor(cfg: ServerConfig)`, not a live "ask the environment whenever you need a value" object threaded through every layer. `@fnioc/config` builds that constructor argument: it reads JSON/env/CLI, merges them in registration order (last source wins, per key — the same precedence model as .NET's `IConfiguration`), and binds the merged result into a typed `T` you hand to `@fnioc/di`'s `useFactory`.
 
-Out of the box:
+The binding step is the part that usually isn't safe: hand-written "read this JSON blob into this interface" code silently drifts the moment someone adds a field to the interface and forgets the parsing code. `@fnioc/config` closes that gap with `SchemaFor<T>`, a type-level mapped/conditional type that mirrors `T`'s shape field-for-field. A schema literal you write by hand is checked by `tsc` against the interface it's meant to bind — missing a field, adding an extra one, using the wrong primitive kind, or forgetting to wrap an optional field all fail to compile. The schema and the interface can never silently drift apart, and this is enforced today, by plain `tsc --strict`, with no plugin or build step involved.
 
-- `semantic-release` reads conventional-commit history on every push to
-  `main`, determines the version, publishes to npm under `@next`, and
-  creates a GitHub pre-release.
-- A manual `promote` workflow that moves the same artifact from `@next`
-  to `@latest` on npm and converts the GitHub pre-release into the
-  latest release. Gated by the `production` environment (required
-  reviewer approval).
-- `auto-merge.yml` enables auto-merge on every non-draft PR so the
-  publish chain closes without human intervention until the promote gate.
-- Conventional-commits → semver bump, with rules documented in `CLAUDE.md`.
+## What's in the MVP — and what's deliberately not
 
-## Use it
+This release covers:
 
-1. Click **Use this template** on GitHub (or `gh repo create
-   <new-name> --template fntemplate/npm --public`).
-2. Run `claim-npm.ps1` to claim the npm package name with a placeholder
-   `0.0.0` publish (idempotent — re-running on an already-claimed package
-   is safe).
-3. Run `setup-gh.ps1` to merge template files into your repo, configure
-   branch protection + the `production` environment, set repo-level merge
-   settings (squash-only, PR title/body squash, linear history, auto-merge,
-   auto-delete-branch), and register GitHub Actions as a trusted publisher
-   on the npm package.
-4. Add the `AUTOMERGE_PAT` secret manually (Settings → Secrets and
-   variables → Actions → New repository secret). Classic PAT with `repo`
-   + `workflow` scopes. PAT — not `GITHUB_TOKEN` — because GitHub
-   suppresses workflow triggers for `GITHUB_TOKEN`-actored events, which
-   would prevent the post-merge `push` from triggering `publish-next`.
-5. Fill in the `lint`, `test`, and `build` steps in
-   `.github/workflows/ci.yml`'s `verify` job, and the corresponding
-   `npm run` scripts in `package.json`.
-6. Commit a `feat:` change on a branch and open a PR. Auto-merge enables;
-   when `verify` goes green it merges; `publish-next` runs; `@next` ships.
-7. When ready, go to Actions → "CI" → "Run workflow", approve the
-   `production` environment gate, and `@latest` updates.
+- **Layered sources** — `JsonFileSource`, `EnvironmentVariablesSource`, `CommandLineSource`, composed via `ConfigBuilder`.
+- **`SchemaFor<T>`-checked binding** — hand-write a schema literal, get a compile error if it doesn't match `T`.
+- **`bindConfig()`** — walks the schema against the merged config and produces a typed `T`, collecting every problem (missing keys, wrong-kind values, nested sections) into one `ConfigBindError` instead of failing on the first one.
+- **Section-scoped binding** — bind the same shape from two different config sections into two independent instances (e.g. a primary and a replica database config), each wired to its own DI token.
 
-## Workflow files
+**Not in this MVP: `addConfig<T>()` transformer sugar.** `@fnioc/di`'s ecosystem is built around a "lowering" story — a `@fnioc/transformer` ts-patch plugin that lets you author against a rich, type-driven surface and lowers it to the plain calls the runtime actually reads. A future `addConfig<T>()` would let the transformer derive and inject the schema for you, the same way it derives DI tokens today. **That transformer integration does not exist yet.** Everything in this package right now is the manual, hand-authored path — write your own `SchemaFor<T>` literal, call `bindConfig` yourself. This isn't a stopgap or a degraded fallback (see [Design philosophy](#design-philosophy) below) — it's the one and only path this version ships, and it's fully safe on its own. If you were expecting decorator- or transformer-driven config binding, it's coming later, not here yet.
 
-| File | Role |
+## Install
+
+```sh
+npm install @fnioc/config @fnioc/di
+```
+
+## Quickstart
+
+This mirrors the runnable example in [`examples/without-transformer`](examples/without-transformer) — see that directory for the full, working project (including two section-scoped bindings of the same shape and `@fnioc/di` wiring end to end).
+
+Given `appsettings.json`:
+
+```json
+{
+  "Server": {
+    "Host": "127.0.0.1",
+    "Port": 5000
+  }
+}
+```
+
+Optionally layer an environment-specific overlay, environment variables, and CLI args:
+
+```json
+// appsettings.Development.json (optional -- only applied if present)
+{ "Server": { "Ssl": true } }
+```
+
+Build the merged configuration root, describe the target shape, and bind it:
+
+```ts
+import { bindConfig, ConfigBuilder } from "@fnioc/config";
+import type { SchemaFor } from "@fnioc/config";
+
+interface ServerConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly ssl?: boolean;
+}
+
+// Checked against ServerConfig by tsc: get a field wrong (missing, extra,
+// wrong primitive, or a bare unwrapped optional) and this line fails to compile.
+const SERVER_CONFIG_SCHEMA: SchemaFor<ServerConfig> = {
+  host: "string",
+  port: "number",
+  ssl: { optional: "boolean" },
+};
+
+const config = new ConfigBuilder()
+  .addJsonFile("appsettings.json")
+  .addJsonFile("appsettings.Development.json", { optional: true })
+  .addEnvironmentVariables("APP_") // APP_Server__Host -> "Server:Host"
+  .addCommandLine(process.argv.slice(2)) // --Server:Port 8080
+  .build();
+
+const serverConfig = bindConfig<ServerConfig>(config, SERVER_CONFIG_SCHEMA, {
+  section: "Server",
+});
+// { host: "127.0.0.1", port: 5000, ssl: true }, modulo whatever env/CLI overrides apply
+```
+
+Wire the bound value into `@fnioc/di` as a constructor argument, same as any other registration:
+
+```ts
+import { DiBuilder, forCtor } from "@fnioc/di";
+
+const services = new DiBuilder<"singleton">();
+
+services.register("app/IServerConfig", {
+  useFactory: () => bindConfig<ServerConfig>(config, SERVER_CONFIG_SCHEMA, { section: "Server" }),
+  tag: "singleton",
+});
+
+forCtor(ApiServer).signature("app/IServerConfig");
+services.add("app/IApiServer", ApiServer).as("singleton");
+```
+
+`ApiServer`'s constructor just takes a plain `ServerConfig` — it never knows `@fnioc/config` exists.
+
+## Design philosophy
+
+`@fnioc/config` follows the same "lowering" ethos as `@fnioc/di` and the rest of the `ioc` toolkit: there's a rich, type-checked authoring surface, and underneath it a plain, hand-writable substrate that the rich surface eventually compiles down to. In `@fnioc/di`, that substrate is string tokens and positional dep arrays; here, it's a schema literal and a `bindConfig()` call.
+
+The important part of that story, and the one this MVP is built to prove: **the manual path is not a degraded fallback you tolerate until the transformer sugar ships.** It's fully type-safe, fully tested, and it's what every consumer of this package uses today, transformer or not. When `addConfig<T>()` does arrive, it will be sugar that *generates* the same `SchemaFor<T>` + `bindConfig()` call shown above — not a parallel system with its own guarantees. If you never adopt the transformer, you lose no correctness, only some typing.
+
+## API surface
+
+| Export | What it does |
 |---|---|
-| `ci.yml` | `verify` (lint/test/build), `publish-next` (semantic-release on push to main), `promote` (workflow_dispatch, @next → @latest, gated) |
-| `auto-merge.yml` | Enables auto-merge on every non-draft PR |
+| `ConfigBuilder` | Registers sources (`.addJsonFile`, `.addEnvironmentVariables`, `.addCommandLine`) and merges them into a `ConfigurationRoot` via `.build()`. |
+| `ConfigurationRoot` | Read-only merged view over flat, colon-delimited keys (`.get`, `.getSection`, `.keys`). |
+| `bindConfig<T>(root, schema, opts?)` | Binds a `ConfigurationRoot` (optionally narrowed via `opts.section`) into a typed `T`, per a `SchemaFor<T>`. |
+| `ConfigBindError` | Thrown by `bindConfig` with every issue found across the whole shape, not just the first. |
+| `SchemaFor<T>` | Type-level mapped/conditional type: the schema shape that exactly matches interface `T`. |
+| `Schema` / `Infer<S>` | The type-level inverse: write a schema value first, derive its bound type from it. |
+| `JsonFileSource`, `EnvironmentVariablesSource`, `CommandLineSource` | The three built-in `ConfigSource` implementations. |
+| `ConfigSource` | The interface any custom source must implement: flatten your input into `Record<string, string>`. |
 
-## See also
+Every export above has its own JSDoc in `src/` — hover in your editor for the details (section-scoping rules, key-casing behavior, per-source flattening conventions, etc.).
 
-- `CLAUDE.md` — conventions / discipline (branch policy, TDD, commit
-  conventions, release flow)
-- `claim-npm.ps1` — claim the npm package name (run first, before
-  configuring GitHub)
-- `setup-gh.ps1` — configure GitHub repo settings, branch protection,
-  environment, and npm trusted publisher (run second)
-- `.releaserc.json` — semantic-release config
+## Development
+
+Branch policy, commit conventions, TDD requirements, and the semantic-release-based `@next` → `@latest` publish flow are documented in [`CLAUDE.md`](CLAUDE.md). In short: every PR merge to `main` ships a `@next` pre-release automatically; promotion to `@latest` is a manual, reviewer-gated step.
