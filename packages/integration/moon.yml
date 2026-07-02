@@ -1,0 +1,45 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+layer: 'application'
+language: 'typescript'
+
+# @fnioc/integration verifies the whole family against its BUILT DIST -- the
+# artefact a real `npm install` consumer gets, not the in-workspace source.
+# This is deliberate and load-bearing: an augmentation/bundling regression
+# (a provider's `declare module` failing to survive rollup-plugin-dts, or the
+# prototype patch being tree-shaken away because `@fnioc/config` got inlined
+# instead of kept external) would ONLY surface against dist, never against
+# source. So the tests run under `node`, whose import/default export condition
+# resolves each `@fnioc/*` bare import to its `dist/index.js`; `bun test` can't
+# be used here because bun's implicit "bun" export condition always wins and
+# resolves those same specifiers to `src/index.ts`, silently testing source.
+dependsOn:
+  - 'config'
+  - 'config-json'
+  - 'config-env'
+  - 'config-commandline'
+
+tasks:
+  test:
+    # `node --test` (Node 24 strips TS types natively, no flag) over the glob;
+    # deps build the dist of all four packages first so the bare imports below
+    # resolve to real bundled output.
+    command: 'node --test test/**/*.test.ts'
+    deps:
+      - 'config:build'
+      - 'config-json:build'
+      - 'config-env:build'
+      - 'config-commandline:build'
+    inputs:
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    command: 'bun x tsc --noEmit -p tsconfig.json'
+    inputs:
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false

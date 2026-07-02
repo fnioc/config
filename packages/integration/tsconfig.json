@@ -1,0 +1,14 @@
+{
+  "//": "Lint-time typecheck config for the integration tests. The tests run under `node --test` (which strips types), so this is purely the `moon run integration:lint` target. `types: [node]` pulls in node:test / node:assert / process without dragging @types/bun's globals in. `noUncheckedIndexedAccess` is relaxed here (as in ioc@fnioc's integration) to keep the DI token-map assertions readable without `!` on every lookup; the production packages keep it on. tsc resolves each @fnioc/* import via the `types` export condition -> src, so the provider `declare module` augmentations enter this program and addJsonFile/addEnvironmentVariables/addCommandLine typecheck on ConfigurationBuilder.",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "noUncheckedIndexedAccess": false,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["test/**/*"]
+}

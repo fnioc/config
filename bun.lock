@@ -18,12 +18,15 @@
       "name": "@fnioc-examples/without-transformer",
       "version": "0.0.0",
       "dependencies": {
-        "@fnioc/config": "file:../..",
+        "@fnioc/config": "workspace:*",
+        "@fnioc/config-commandline": "workspace:*",
+        "@fnioc/config-env": "workspace:*",
+        "@fnioc/config-json": "workspace:*",
         "@fnioc/di": "^1.0.0",
       },
       "devDependencies": {
         "@types/node": "^24.13.2",
-        "typescript": "^6.0.3",
+        "typescript": "^5.9.0",
       },
     },
     "packages/config": {
@@ -58,6 +61,18 @@
       },
       "peerDependencies": {
         "@fnioc/config": "workspace:^",
+      },
+    },
+    "packages/integration": {
+      "name": "@fnioc/integration",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@fnioc/config": "workspace:*",
+        "@fnioc/config-commandline": "workspace:*",
+        "@fnioc/config-env": "workspace:*",
+        "@fnioc/config-json": "workspace:*",
+        "@fnioc/di": "^1.0.0",
+        "@types/node": "^24.13.2",
       },
     },
   },
@@ -115,6 +130,8 @@
     "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
 
     "@fnioc/di": ["@fnioc/di@1.0.0", "", { "peerDependencies": { "@fnioc/core": "^1.0.0" } }, "sha512-3Z5z7aj6Sagd9e4nlH90QdEeGKf0X6z0s4/k9gFUcN1rGaU/yyilcQVfrlzFZr/SasDJIrJtvoUrp6VnfW7AOg=="],
+
+    "@fnioc/integration": ["@fnioc/integration@workspace:packages/integration"],
 
     "@humanfs/core": ["@humanfs/core@0.19.2", "", { "dependencies": { "@humanfs/types": "^0.15.0" } }, "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA=="],
 
@@ -357,10 +374,6 @@
     "yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
-
-    "@fnioc-examples/without-transformer/@fnioc/config": ["@fnioc/config@root:", {}],
-
-    "@fnioc-examples/without-transformer/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@typescript-eslint/eslint-plugin/ignore": ["ignore@7.0.5", "", {}, "sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg=="],
   }
