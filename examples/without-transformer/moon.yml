@@ -1,0 +1,57 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+id: 'examples-without-transformer'
+layer: 'application'
+language: 'typescript'
+
+# A real external consumer: imports @fnioc/config + the three providers as bare
+# specifiers, each resolved at runtime by `node` through its symlink to the
+# package's BUILT DIST (import/default export condition). Plain `tsc` compiles
+# this example's own src into dist -- no bundler, no transformer. The add*
+# sugar (addJsonFile/addEnvironmentVariables/addCommandLine) is contributed by
+# the providers' bare side-effect imports in src/main.ts, so this example only
+# runs correctly if those augmentations survive bundling -- hence the four
+# package builds as test deps.
+dependsOn:
+  - 'config'
+  - 'config-json'
+  - 'config-env'
+  - 'config-commandline'
+
+tasks:
+  build:
+    command: 'bun x tsc -p tsconfig.json'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+      - '/tsconfig.base.json'
+    outputs:
+      - 'dist'
+  test:
+    # Run the compiled example against the built dist of all four packages,
+    # with the same fixed env var + CLI arg `bun run start` uses, and diff
+    # against the golden snapshot.
+    script: 'APP_Server__Host=0.0.0.0 node dist/main.js --Server:Port 8080 > /tmp/fnioc-config-without-transformer.out && diff -u expected.txt /tmp/fnioc-config-without-transformer.out'
+    deps:
+      - 'build'
+      - 'config:build'
+      - 'config-json:build'
+      - 'config-env:build'
+      - 'config-commandline:build'
+    inputs:
+      - 'src/**/*'
+      - 'appsettings.json'
+      - 'appsettings.Development.json'
+      - 'expected.txt'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    command: 'bun x tsc --noEmit -p tsconfig.json'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false

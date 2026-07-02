@@ -39,8 +39,8 @@ export class DatabasePool {
     const p = this.primary;
     const r = this.replica;
     return (
-      `primary=${p.host}/${p.database} (pool ${p.poolSize}), ` +
-      `replica=${r.host}/${r.database} (pool ${r.poolSize})`
+      `primary=${p.host}/${p.database} (pool ${p.poolSize}), `
+      + `replica=${r.host}/${r.database} (pool ${r.poolSize})`
     );
   }
 }

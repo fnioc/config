@@ -1,17 +1,18 @@
 # without-transformer
 
-A real, runnable consumer of `@fnioc/config` + the real, published
-`@fnioc/di` (`^1.0.0`) -- no ts-patch transformer, no decorators, no
-reflect-metadata.
+A real, runnable consumer of `@fnioc/config` + its three provider packages
+(`@fnioc/config-json`, `@fnioc/config-env`, `@fnioc/config-commandline`) + the
+real, published `@fnioc/di` (`^1.0.0`) -- no ts-patch transformer, no
+decorators, no reflect-metadata.
 
 ```sh
 bun install
 bun run start
 ```
 
-`start` rebuilds (`tsc -p tsconfig.json`) and then runs `dist/main.js` with a
-fixed environment variable and CLI argument, so the printed output is
-deterministic:
+`start` rebuilds (`moon run examples-without-transformer:build`, i.e. plain
+`tsc`) and then runs `dist/main.js` with a fixed environment variable and CLI
+argument, so the printed output is deterministic:
 
 ```
 === @fnioc/config -- without transformer ===
@@ -30,6 +31,14 @@ primary and replica are distinct instances: true
   `Host` comes from the env override, `Port` from the CLI override, and `Ssl`
   from the Development overlay -- proving all four layers actually apply, in
   precedence order.
+- **Provider packages via side-effect imports**: `addJsonFile`,
+  `addEnvironmentVariables`, and `addCommandLine` are not baked into
+  `ConfigurationBuilder` -- each is contributed by its own provider package
+  (`@fnioc/config-json` / `-env` / `-commandline`) through TS declaration
+  merging + a prototype patch, mimicking a C# extension method. `src/main.ts`
+  brings them in with bare `import "@fnioc/config-json";` lines (the
+  `using Microsoft.Extensions.Configuration.Json;` equivalent) alongside the
+  named `@fnioc/config` import.
 - **`SchemaFor<T>`-checked hand-written schemas**: `SERVER_CONFIG_SCHEMA` and
   `DATABASE_CONFIG_SCHEMA` in `src/main.ts` are typed `SchemaFor<ServerConfig>`
   / `SchemaFor<DatabaseConfig>`. Get a field wrong -- missing, extra, wrong

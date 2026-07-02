@@ -21,17 +21,24 @@
 // (8080), and Ssl from the Development overlay (true) -- proving all four
 // layers actually take effect, in precedence order.
 
-import { bindConfig, ConfigBuilder } from "@fnioc/config";
+import { bindConfig, ConfigurationBuilder } from "@fnioc/config";
 import type { SchemaFor } from "@fnioc/config";
+// Bare side-effect imports install addJsonFile / addEnvironmentVariables /
+// addCommandLine onto ConfigurationBuilder from each provider package -- the
+// C# `using Microsoft.Extensions.Configuration.Json;` equivalent. Without
+// these the sugar methods below would not exist (see each provider's README).
+import "@fnioc/config-json";
+import "@fnioc/config-env";
+import "@fnioc/config-commandline";
 import { DiBuilder, forCtor } from "@fnioc/di";
 
 import type { DatabaseConfig, ServerConfig } from "./contracts.js";
 import { ApiServer, DatabasePool } from "./services.js";
 
-const config = new ConfigBuilder()
+const config = new ConfigurationBuilder()
   .addJsonFile("appsettings.json")
   .addJsonFile("appsettings.Development.json", { optional: true })
-  .addEnvironmentVariables("APP_")
+  .addEnvironmentVariables({ prefix: "APP_" })
   .addCommandLine(process.argv.slice(2))
   .build();
 
@@ -63,7 +70,7 @@ const services = new DiBuilder<"singleton">();
 // with a `{ useFactory, tag }` spec -- there is no `addFactory(token, fn).as(scope)`
 // sugar on `DiBuilder` (see README.md in this directory for why that matters).
 // @fnioc/config contributes no new DI primitive at all here -- only
-// `bindConfig()` (the runtime binder) and `ConfigBuilder`/the sources above.
+// `bindConfig()` (the runtime binder) and `ConfigurationBuilder`/the sources above.
 //
 // NOTE: `bindConfig`'s `T` is given an explicit type argument below. It does
 // NOT infer from the `schema: SchemaFor<T>` parameter alone: `SchemaFor<T>`'s
@@ -81,13 +88,11 @@ services.register(SERVER_CONFIG, {
 // config section, each registered under its own explicit token -- proof
 // that section-scoped binding and multiple instances of one shape both work.
 services.register(DB_PRIMARY, {
-  useFactory: () =>
-    bindConfig<DatabaseConfig>(config, DATABASE_CONFIG_SCHEMA, { section: "Database:Primary" }),
+  useFactory: () => bindConfig<DatabaseConfig>(config, DATABASE_CONFIG_SCHEMA, { section: "Database:Primary" }),
   tag: "singleton",
 });
 services.register(DB_REPLICA, {
-  useFactory: () =>
-    bindConfig<DatabaseConfig>(config, DATABASE_CONFIG_SCHEMA, { section: "Database:Replica" }),
+  useFactory: () => bindConfig<DatabaseConfig>(config, DATABASE_CONFIG_SCHEMA, { section: "Database:Replica" }),
   tag: "singleton",
 });
 

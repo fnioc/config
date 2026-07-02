@@ -2,19 +2,24 @@
   "name": "@fnioc-examples/without-transformer",
   "private": true,
   "version": "0.0.0",
-  "description": "Runnable @fnioc/config example with no transformer -- explicit tokens, hand-written dependency metadata (forCtor), and a SchemaFor<T>-checked hand-written bind schema, wired into the real, published @fnioc/di DiBuilder API.",
+  "description": "Runnable @fnioc/config example with no transformer -- explicit tokens, hand-written dependency metadata (forCtor), and a SchemaFor<T>-checked hand-written bind schema, wired into the real, published @fnioc/di DiBuilder API. Depends on @fnioc/config plus all three provider packages (the add* sugar arrives via their side-effect imports).",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "tsc -p tsconfig.json && APP_Server__Host=0.0.0.0 node dist/main.js --Server:Port 8080"
+    "build": "moon run examples-without-transformer:build",
+    "start": "moon run examples-without-transformer:build && APP_Server__Host=0.0.0.0 node dist/main.js --Server:Port 8080",
+    "test": "moon run examples-without-transformer:test",
+    "lint": "moon run examples-without-transformer:lint"
   },
   "dependencies": {
-    "@fnioc/config": "file:../..",
+    "@fnioc/config": "workspace:*",
+    "@fnioc/config-commandline": "workspace:*",
+    "@fnioc/config-env": "workspace:*",
+    "@fnioc/config-json": "workspace:*",
     "@fnioc/di": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",
-    "typescript": "^6.0.3"
+    "typescript": "^5.9.0"
   }
 }
