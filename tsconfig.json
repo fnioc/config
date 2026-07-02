@@ -1,23 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "lib": ["ES2022"],
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "types": ["node"]
-  },
-  "include": ["src/**/*"]
+  "//": "Each package owns its own standalone tsconfig (noEmit typecheck) extending tsconfig.base.json. No TS project references at the root -- packages resolve workspace cross-deps through bun/moon, not composite references.",
+  "files": [],
+  "include": []
 }
