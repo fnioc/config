@@ -8,23 +8,39 @@ Worktree mechanics, branch/PR cleanup, and templated paths are governed by `~/.c
 
 ## Release flow
 
-This repo uses [semantic-release](https://semantic-release.gitbook.io/) with a two-stage dist-tag promotion:
+This repo ships 4 published packages (`@fnioc/config`, `@fnioc/config-json`,
+`@fnioc/config-env`, `@fnioc/config-commandline`) **lockstep** — every
+package in the family carries the same version, bumped together, matching
+how Microsoft ships the real `Microsoft.Extensions.Configuration.*` family.
+It still uses [semantic-release](https://semantic-release.gitbook.io/),
+computing exactly ONE version for the whole family from the commit history,
+with a two-stage dist-tag promotion:
 
 - Every push to `main` (necessarily via PR merge — see above) runs the
   `CI` workflow's `publish-next` job. semantic-release reads the
-  conventional-commit history, determines the next version, publishes to
-  npm under the `@next` dist-tag, and creates a GitHub **pre-release**.
+  conventional-commit history and determines the one next version for the
+  family (root `package.json` is `private: true`, so
+  `@semantic-release/npm` only tags/releases — it never publishes the root
+  package itself). The job then runs `moon run :build` across all packages
+  and publishes each of the 4 published packages to npm under the `@next`
+  dist-tag at that one version (`pnpm pack` + `npm publish <tarball>
+  --provenance --tag next`, looped per package), and creates a single GitHub
+  **pre-release**.
 - Promotion to `@latest` is a **manual gate**. Run the `CI` workflow via
   workflow_dispatch ("Run workflow" in the Actions UI); the `promote` job
   is gated by the `production` environment, which requires reviewer
-  approval. It moves the same artifact from `@next` to `@latest` on npm
-  and converts the GitHub pre-release into the latest release. No
-  rebuild — the @next version is the @latest version.
+  approval. It loops over the same 4 package names, reads each package's
+  `@next` version (confirming all 4 agree — lockstep drift is a hard
+  error), promotes each from `@next` to `@latest` on npm, and converts the
+  single GitHub pre-release into the latest release. No rebuild — the
+  `@next` artifacts are the `@latest` artifacts, just re-tagged.
 - Auto-merge is enabled on every non-draft PR
   (`.github/workflows/auto-merge.yml`); it fires the moment the `verify`
   status check is green.
 
-Effectively: every PR merge to `main` ships a `@next` pre-release. `@latest` is what users get on `npm install <pkg>` by default — that's the gated step.
+Effectively: every PR merge to `main` ships one `@next` pre-release covering
+all 4 packages at the same version. `@latest` is what users get on
+`npm install <pkg>` by default — that's the gated step.
 
 ### Version bump rules (conventional commits)
 

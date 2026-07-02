@@ -19,30 +19,35 @@ jobs:
   # ── Verify ────────────────────────────────────────────────────────────────
   # Runs on all events except workflow_dispatch (which is promote-only).
   # Make this job a required status check on main in branch protection settings.
+  #
+  # Toolchain: Bun (runtime + package manager + test runner) and moon (task
+  # orchestration). Both pinned in mise.toml — mise-action installs whatever
+  # mise.toml asks for, keeping one source of truth between local dev and CI.
   verify:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
-          cache: npm
-      # `npm test` shells out to `bun test` (see package.json) -- GitHub's
-      # ubuntu-latest runner image ships Node but not Bun, so it has to be
-      # installed explicitly or every run fails on "bun: command not found".
-      - uses: oven-sh/setup-bun@v2
+          # moon resolves a touched-files baseline against the default branch
+          # for incremental task scheduling. Without fetching it, moon errors
+          # with `fatal: ambiguous argument 'main': unknown revision`.
+          fetch-depth: 0
+      - uses: jdx/mise-action@v2
         with:
-          bun-version: latest
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
+          experimental: true
+      - run: bun install --frozen-lockfile
+      - run: bun x moon run :lint
+      - run: bun x moon run :test
+      - run: bun x moon run :build
 
   # ── Publish @next ─────────────────────────────────────────────────────────
-  # Runs on every push to main. Uses semantic-release to determine the version
-  # from conventional commits, publish to npm under the @next dist-tag, and
-  # create a GitHub pre-release. Nothing is published on PRs or merge_group.
+  # Runs on every push to main. Uses semantic-release to determine ONE version
+  # for the whole family from conventional commits (lockstep, matching how
+  # Microsoft.Extensions.Configuration.* ship — every package in the family
+  # carries the same version), then builds and publishes all 4 packages to
+  # npm under the @next dist-tag at that one version, plus a GitHub
+  # pre-release. Nothing is published on PRs or merge_group.
   publish-next:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -59,15 +64,54 @@ jobs:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
       - run: npm ci
-      - run: npx semantic-release
+      - name: Determine + tag the lockstep version
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: jdx/mise-action@v2
+        with:
+          experimental: true
+      - run: bun install --frozen-lockfile
+
+      # Build all 4 published packages so dist/ exists to pack.
+      - name: Build all packages
+        run: bun x moon run :build
+
+      # Pack and publish each of the 4 published packages (config is core;
+      # config-json/-env/-commandline are the providers) at the ONE version
+      # semantic-release just computed, all to @next.
+      #
+      # Why pnpm pack (not `bun pm pack`): each package's workspace
+      # package.json carries dev-time source exports (main/types/exports
+      # point at ./src/index.ts so edits are immediately visible in the
+      # workspace without a build step). pnpm pack applies `publishConfig`
+      # overrides — rewriting those fields to the dist-pointing values in the
+      # tarball. `bun pm pack` does not apply publishConfig field overrides
+      # (oven-sh/bun#15601 still open), so pnpm is used for packing. pnpm is
+      # pinned via mise.toml.
+      #
+      # Why npm publish <tarball> (not pnpm publish): npm trusted-publisher
+      # OIDC authenticates the publish here (id-token: write, no NPM_TOKEN
+      # secret needed once trusted publishing is configured on npmjs.com).
+      # Using npm for the actual publish keeps OIDC on the proven path and
+      # lets --provenance attach an attestation via the same OIDC token.
+      - name: Pack and publish all packages to @next
+        run: |
+          set -euo pipefail
+          for pkg_path in packages/config packages/config-json packages/config-env packages/config-commandline; do
+            echo "::group::Packing and publishing $pkg_path"
+            tarball=$(cd "$pkg_path" && pnpm pack --pack-destination /tmp 2>&1 | grep '\.tgz$' | tail -1)
+            npm publish "$tarball" --provenance --tag next
+            echo "::endgroup::"
+          done
+
   # ── Promote @next → @latest ───────────────────────────────────────────────
   # Triggered manually via "Run workflow" in the GitHub Actions UI.
-  # Reads whatever version is currently on @next, promotes it to @latest on
-  # npm, and marks the corresponding GitHub pre-release as the latest release.
-  # No rebuild — the same artifact is just re-tagged.
+  # Under lockstep versioning all 4 packages share the same @next version;
+  # promote each to @latest on npm, then mark the corresponding GitHub
+  # pre-release as the latest release. No rebuild — the same artifacts are
+  # just re-tagged.
   #
   # Setup: create a "production" environment in repo Settings → Environments
   # and configure required reviewers for an approval gate before promotion.
@@ -87,18 +131,34 @@ jobs:
       - name: Resolve @next version
         id: resolve
         run: |
-          PACKAGE=$(node -p "require('./package.json').name")
-          VERSION=$(npm view "$PACKAGE" dist-tags.next 2>/dev/null)
-          if [ -z "$VERSION" ]; then
-            echo "::error::No @next version found for $PACKAGE — nothing to promote."
-            exit 1
-          fi
-          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Promoting $PACKAGE@$VERSION (@next → @latest)"
+          set -euo pipefail
+          # All 4 packages are lockstep — read the version off each and
+          # confirm they agree before promoting any of them.
+          packages="@fnioc/config @fnioc/config-json @fnioc/config-env @fnioc/config-commandline"
+          version=""
+          for pkg in $packages; do
+            v=$(npm view "$pkg" dist-tags.next 2>/dev/null)
+            if [ -z "$v" ]; then
+              echo "::error::No @next version found for $pkg — nothing to promote."
+              exit 1
+            fi
+            if [ -z "$version" ]; then
+              version="$v"
+            elif [ "$v" != "$version" ]; then
+              echo "::error::Lockstep drift — $pkg@next is $v, expected $version."
+              exit 1
+            fi
+          done
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Promoting $packages @ $version (@next → @latest)"
       - name: Promote @next → @latest on npm
-        run: npm dist-tag add ${{ steps.resolve.outputs.package }}@${{ steps.resolve.outputs.version }} latest
+        run: |
+          set -euo pipefail
+          for pkg in ${{ steps.resolve.outputs.packages }}; do
+            npm dist-tag add "$pkg@${{ steps.resolve.outputs.version }}" latest
+          done
       - name: Promote GitHub pre-release → latest release
         run: gh release edit ${{ steps.resolve.outputs.tag }} --prerelease=false --latest
         env:
