@@ -1,0 +1,50 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+layer: 'library'
+language: 'typescript'
+
+# @fnioc/config-commandline peer-depends on @fnioc/config and keeps it
+# EXTERNAL at build time (never inlined) -- the extension-method-mimicking
+# augmentation pattern (addCommandLine patched onto ConfigurationBuilder.prototype)
+# only works if this package's runtime touches the SAME ConfigurationBuilder
+# class the consumer's own @fnioc/config import resolves to. Inlining core
+# would create a second, private copy whose prototype the consumer never
+# touches.
+dependsOn:
+  - 'config'
+
+tasks:
+  build:
+    # Typecheck first, then bundle: tsc --noEmit catches type errors before
+    # build.ts produces the dist artefacts (bun build does not typecheck).
+    script: 'bun x tsc --noEmit -p tsconfig.json && bun build.ts'
+    deps:
+      - 'config:build'
+    inputs:
+      - 'src/**/*'
+      - 'build.ts'
+      - 'rollup.dts.mjs'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - '/packages/config/src/**/*'
+    outputs:
+      - 'dist'
+  test:
+    command: 'bun test'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    # Widened tsconfig.lint.json includes test/**/*.
+    command: 'bun x tsc --noEmit -p tsconfig.lint.json'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'tsconfig.lint.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false
