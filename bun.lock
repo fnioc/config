@@ -30,6 +30,36 @@
       "name": "@fnioc/config",
       "version": "0.0.0",
     },
+    "packages/config-commandline": {
+      "name": "@fnioc/config-commandline",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@fnioc/config": "workspace:*",
+      },
+      "peerDependencies": {
+        "@fnioc/config": "workspace:^",
+      },
+    },
+    "packages/config-env": {
+      "name": "@fnioc/config-env",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@fnioc/config": "workspace:*",
+      },
+      "peerDependencies": {
+        "@fnioc/config": "workspace:^",
+      },
+    },
+    "packages/config-json": {
+      "name": "@fnioc/config-json",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@fnioc/config": "workspace:*",
+      },
+      "peerDependencies": {
+        "@fnioc/config": "workspace:^",
+      },
+    },
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
@@ -75,6 +105,12 @@
     "@fnioc-examples/without-transformer": ["@fnioc-examples/without-transformer@workspace:examples/without-transformer"],
 
     "@fnioc/config": ["@fnioc/config@workspace:packages/config"],
+
+    "@fnioc/config-commandline": ["@fnioc/config-commandline@workspace:packages/config-commandline"],
+
+    "@fnioc/config-env": ["@fnioc/config-env@workspace:packages/config-env"],
+
+    "@fnioc/config-json": ["@fnioc/config-json@workspace:packages/config-json"],
 
     "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
 

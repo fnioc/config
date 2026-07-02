@@ -1,0 +1,49 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+layer: 'library'
+language: 'typescript'
+
+# @fnioc/config-json peer-depends on @fnioc/config and keeps it EXTERNAL at
+# build time (see build.ts) -- the addJsonFile augmentation patches the
+# CONSUMER's ConfigurationBuilder.prototype, so a private inlined copy would
+# silently break the sugar method. config still needs to be built/typechecked
+# first so this package's own build (which typechecks against it) has a
+# consistent target.
+dependsOn:
+  - 'config'
+
+tasks:
+  build:
+    # Typecheck src first, then bundle: `tsc --noEmit` catches type errors
+    # before build.ts produces the dist artefacts (bun build does not typecheck).
+    script: 'bun x tsc --noEmit -p tsconfig.json && bun build.ts'
+    deps:
+      - 'config:build'
+    inputs:
+      - 'src/**/*'
+      - 'build.ts'
+      - 'rollup.dts.mjs'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - '/packages/config/src/**/*'
+    outputs:
+      - 'dist'
+  test:
+    command: 'bun test'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    # Widened tsconfig.lint.json includes test/**/*.
+    command: 'bun x tsc --noEmit -p tsconfig.lint.json'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'tsconfig.lint.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false
