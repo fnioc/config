@@ -1,0 +1,30 @@
+// Memory provider barrel + the addInMemoryCollection augmentation.
+//
+// Even though the Memory provider lives in the same package as
+// ConfigurationBuilder, its sugar method is installed via the SAME
+// extension-method-mimicking pattern the external provider packages use (TS
+// declaration merging + a runtime prototype assignment) -- faithful to
+// Microsoft's own ConfigurationBuilder, which carries no add* sugar of its
+// own, only extension methods, even for same-assembly Memory. The augmentation
+// targets the module that DECLARES the class so the merge survives the
+// re-export through the package barrel.
+
+import { ConfigurationBuilder } from "../configuration-builder";
+import { type ConfigurationData, MemoryConfigurationSource } from "./memory-configuration-source";
+
+export { MemoryConfigurationProvider } from "./memory-configuration-provider";
+export { type ConfigurationData, MemoryConfigurationSource } from "./memory-configuration-source";
+
+declare module "../configuration-builder" {
+  interface ConfigurationBuilder {
+    /** Registers an in-memory configuration source seeded with `initialData`. */
+    addInMemoryCollection(initialData?: ConfigurationData): this;
+  }
+}
+
+ConfigurationBuilder.prototype.addInMemoryCollection = function (
+  this: ConfigurationBuilder,
+  initialData?: ConfigurationData,
+): ConfigurationBuilder {
+  return this.add(new MemoryConfigurationSource({ initialData }));
+};

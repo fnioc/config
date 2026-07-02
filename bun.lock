@@ -26,6 +26,10 @@
         "typescript": "^6.0.3",
       },
     },
+    "packages/config": {
+      "name": "@fnioc/config",
+      "version": "0.0.0",
+    },
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
@@ -70,7 +74,7 @@
 
     "@fnioc-examples/without-transformer": ["@fnioc-examples/without-transformer@workspace:examples/without-transformer"],
 
-    "@fnioc/config": ["@fnioc/config@root:", {}],
+    "@fnioc/config": ["@fnioc/config@workspace:packages/config"],
 
     "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
 
@@ -317,6 +321,8 @@
     "yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
+
+    "@fnioc-examples/without-transformer/@fnioc/config": ["@fnioc/config@root:", {}],
 
     "@fnioc-examples/without-transformer/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 

@@ -5,20 +5,17 @@
 // unwrapped optional -- for both top-level and nested-object fields), and a
 // schema that matches T exactly must compile with no errors.
 //
-// This file was previously verified only by hand (a throwaway scratch tsc
-// probe, per code review) -- nothing in this repo's own tooling actually
-// re-checked the claim on every change. It's `test/*.ts`, so `bun test`
-// alone does not type-check it (bun does not type-check anything); what
-// makes these `@ts-expect-error` assertions load-bearing is `npm run lint`
-// running `tsc -p tsconfig.lint.json`, which (unlike the base
-// `tsconfig.json` used by `npm run build`) includes `test/**/*` -- see that
-// config's own doc comment. If `SchemaFor<T>` ever silently loosens (or the
-// lint config regresses back to `src/**/*` only), one of the
-// `@ts-expect-error` comments below stops matching a real error and `tsc`
-// fails the build with "Unused '@ts-expect-error' directive".
+// It's `test/*.ts`, so `bun test` alone does not type-check it (bun does not
+// type-check anything); what makes these `@ts-expect-error` assertions
+// load-bearing is `moon run config:lint` running `tsc -p tsconfig.lint.json`,
+// which (unlike the base `tsconfig.json` used by `build`) includes
+// `test/**/*` -- see that config's own doc comment. If `SchemaFor<T>` ever
+// silently loosens (or the lint config regresses back to `src/**/*` only),
+// one of the `@ts-expect-error` comments below stops matching a real error
+// and `tsc` fails the build with "Unused '@ts-expect-error' directive".
 
 import { describe, expect, test } from "bun:test";
-import type { SchemaFor } from "../src/schema.js";
+import type { SchemaFor } from "@fnioc/config";
 
 interface Nested {
   value: string;
@@ -102,12 +99,6 @@ const nestedWrongKind: SchemaFor<Target> = {
 };
 
 describe("SchemaFor<T>", () => {
-  // The assertions above are what this test file actually exists to check
-  // (see the module doc comment) -- every `@ts-expect-error` above must
-  // land on a genuine compile error, and `validSchema` must compile clean,
-  // or `npm run lint` fails. This runtime assertion just keeps `validSchema`
-  // (and its now-intentionally-unused `@ts-expect-error` siblings) from
-  // being flagged as dead code by anything stricter than `tsc`'s defaults.
   test("a schema literal that matches T field-for-field binds to the expected shape", () => {
     expect(validSchema).toEqual({
       host: "string",

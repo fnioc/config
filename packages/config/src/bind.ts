@@ -1,29 +1,34 @@
-// bindConfig -- walks a SchemaFor<T> against a (possibly section-narrowed)
-// ConfigurationRoot's flat keys and produces a typed T.
+// bindConfig -- walks a SchemaFor<T> against an IConfiguration (via
+// get/getSection/getChildren) and produces a typed T.
 //
 // Mirrors .NET's Options validation model: every problem in the whole shape
 // is collected before anything is thrown. A single bad number three levels
 // deep doesn't hide a missing key at the top -- both show up together in
 // one ConfigBindError, so a caller fixing config can fix everything in one
 // pass instead of playing whack-a-mole against a fail-fast binder.
+//
+// Case-insensitivity is now free from the provider store (an UPPERCASE env
+// key and a natural-cased JSON key resolve to the same lookup), so this file
+// no longer hand-rolls the raw-casing key/segment scans the single-Map MVP
+// needed -- it just walks IConfiguration, which folds case internally.
 
-import type { Schema, SchemaFor } from "./schema.js";
-import type { ConfigurationRoot } from "./sources/types.js";
+import type { IConfiguration, IConfigurationSection } from "./abstractions/abstractions";
+import type { Schema, SchemaFor } from "./schema";
 
 /** Options accepted by {@link bindConfig}. */
 export interface BindOptions {
   /**
-   * A colon-delimited section path (e.g. `"Database:Primary"`) to narrow
-   * the `ConfigurationRoot` to before binding, resolved case-insensitively
-   * one segment at a time (matching every other key/section lookup this
-   * binder does). Omit to bind against the root as given.
+   * A colon-delimited section path (e.g. `"Database:Primary"`) to narrow the
+   * configuration to before binding. Resolved case-insensitively (like every
+   * other key/section lookup this binder does -- the provider store folds
+   * case). Omit to bind against the configuration as given.
    */
   section?: string;
 }
 
 /**
  * Thrown by {@link bindConfig} when one or more problems are found while
- * binding a schema against a `ConfigurationRoot`.
+ * binding a schema against an `IConfiguration`.
  *
  * Every issue across the whole shape (missing keys, wrong-kind values,
  * problems nested arbitrarily deep in sections) is collected and reported
@@ -49,67 +54,28 @@ function isOptionalSchema(schema: Schema): schema is { optional: Schema } {
   return typeof schema === "object" && schema !== null && "optional" in schema;
 }
 
-/** First colon-delimited segment of a flat key, or the whole key if none. */
-function firstSegment(key: string): string {
-  const idx = key.indexOf(":");
-  return idx === -1 ? key : key.slice(0, idx);
-}
-
-/** Case-insensitive exact-key lookup for a leaf value at this scope. */
-function findRawLeafKey(root: ConfigurationRoot, propName: string): string | undefined {
-  const lower = propName.toLowerCase();
-  for (const key of root.keys()) {
-    if (key.toLowerCase() === lower) {
-      return key;
-    }
-  }
-  return undefined;
-}
-
 /**
- * Case-insensitive lookup of the raw (actually-cased) top-level segment
- * under which a nested object's keys live at this scope, so `getSection`
- * can be called with the casing the config source actually used.
+ * Whether a section actually exists -- has a value directly, or has any child
+ * sections. Mirrors .NET's `ConfigurationExtensions.Exists`. A section object
+ * is always returned by `getSection` (never null), so presence is decided by
+ * whether anything lives at or under its path.
  */
-function findRawSectionSegment(root: ConfigurationRoot, propName: string): string | undefined {
-  const lower = propName.toLowerCase();
-  for (const key of root.keys()) {
-    const idx = key.indexOf(":");
-    if (idx === -1) {
-      continue;
-    }
-    const segment = firstSegment(key);
-    if (segment.toLowerCase() === lower) {
-      return segment;
-    }
+function sectionExists(section: IConfigurationSection): boolean {
+  if (section.value !== undefined) {
+    return true;
   }
-  return undefined;
+  for (const _child of section.getChildren()) {
+    return true;
+  }
+  return false;
 }
 
-/**
- * Case-insensitively resolves a colon-delimited section path (e.g.
- * `"Database:Primary"`) against `root`, one segment at a time, narrowing
- * on each step. `opts.section` in {@link bindConfig} is documented as
- * matching .NET's case-insensitive config binder, same as every other
- * key/section lookup in this file -- so it needs the same raw-casing
- * resolution `findRawSectionSegment` gives internal recursive lookups,
- * rather than a raw, case-sensitive `root.getSection(section)` call.
- */
-function resolveSection(root: ConfigurationRoot, section: string): ConfigurationRoot {
-  let scoped = root;
-  for (const segment of section.split(":")) {
-    const rawSegment = findRawSectionSegment(scoped, segment);
-    scoped = scoped.getSection(rawSegment ?? segment);
-  }
-  return scoped;
-}
-
-/** Whether `propName` (matched against `schema`'s shape) has any raw data at this scope. */
-function isPresent(root: ConfigurationRoot, schema: Schema, propName: string): boolean {
+/** Whether `propName` (matched against `schema`'s shape) has any data at this scope. */
+function isPresent(config: IConfiguration, schema: Schema, propName: string): boolean {
   if (isLeafSchema(schema)) {
-    return findRawLeafKey(root, propName) !== undefined;
+    return config.get(propName) !== undefined;
   }
-  return findRawSectionSegment(root, propName) !== undefined;
+  return sectionExists(config.getSection(propName));
 }
 
 function coerceLeaf(
@@ -158,7 +124,7 @@ function coerceLeaf(
 
 /** Binds a required (already-unwrapped-of-optional) field, recording issues as needed. */
 function bindRequiredField(
-  root: ConfigurationRoot,
+  config: IConfiguration,
   schema: Schema,
   propName: string,
   path: readonly string[],
@@ -167,25 +133,24 @@ function bindRequiredField(
   const fullPath = [...path, propName].join(":");
 
   if (isLeafSchema(schema)) {
-    const rawKey = findRawLeafKey(root, propName);
-    if (rawKey === undefined) {
+    const raw = config.get(propName);
+    if (raw === undefined) {
       issues.push(`missing required key "${fullPath}"`);
       return undefined;
     }
-    return coerceLeaf(schema, root.get(rawKey) as string, fullPath, issues);
+    return coerceLeaf(schema, raw, fullPath, issues);
   }
 
-  const rawSegment = findRawSectionSegment(root, propName);
-  if (rawSegment === undefined) {
+  const section = config.getSection(propName);
+  if (!sectionExists(section)) {
     issues.push(`missing required key "${fullPath}"`);
     return {};
   }
-  const nestedRoot = root.getSection(rawSegment);
-  return bindObject(nestedRoot, schema as Record<string, Schema>, [...path, propName], issues);
+  return bindObject(section, schema as Record<string, Schema>, [...path, propName], issues);
 }
 
 function bindField(
-  root: ConfigurationRoot,
+  config: IConfiguration,
   schema: Schema,
   propName: string,
   path: readonly string[],
@@ -193,38 +158,38 @@ function bindField(
 ): unknown {
   if (isOptionalSchema(schema)) {
     const inner = schema.optional;
-    if (!isPresent(root, inner, propName)) {
+    if (!isPresent(config, inner, propName)) {
       return undefined;
     }
-    return bindRequiredField(root, inner, propName, path, issues);
+    return bindRequiredField(config, inner, propName, path, issues);
   }
-  return bindRequiredField(root, schema, propName, path, issues);
+  return bindRequiredField(config, schema, propName, path, issues);
 }
 
 function bindObject(
-  root: ConfigurationRoot,
+  config: IConfiguration,
   schema: Record<string, Schema>,
   path: readonly string[],
   issues: string[],
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const propName of Object.keys(schema)) {
-    result[propName] = bindField(root, schema[propName] as Schema, propName, path, issues);
+    result[propName] = bindField(config, schema[propName] as Schema, propName, path, issues);
   }
   return result;
 }
 
 /**
- * Binds a flat `ConfigurationRoot` (optionally narrowed to `opts.section`
- * first) into a typed `T`, per `schema`. Key matching against schema
- * property names is case-insensitive, matching .NET's config binder.
+ * Binds an `IConfiguration` (optionally narrowed to `opts.section` first) into
+ * a typed `T`, per `schema`. Key matching against schema property names is
+ * case-insensitive, matching .NET's config binder.
  *
  * Every issue across the whole shape is collected before anything is
  * thrown -- see the module doc comment. Throws a single `ConfigBindError`
  * if any issues were found; otherwise returns the fully-bound `T`.
  */
-export function bindConfig<T>(root: ConfigurationRoot, schema: SchemaFor<T>, opts?: BindOptions): T {
-  const scoped = opts?.section !== undefined ? resolveSection(root, opts.section) : root;
+export function bindConfig<T>(config: IConfiguration, schema: SchemaFor<T>, opts?: BindOptions): T {
+  const scoped = opts?.section !== undefined ? config.getSection(opts.section) : config;
   const issues: string[] = [];
   const value = bindObject(scoped, schema as unknown as Record<string, Schema>, [], issues);
 
