@@ -5,7 +5,7 @@ id: 'examples-without-transformer'
 layer: 'application'
 language: 'typescript'
 
-# A real external consumer: imports @fnioc/config + the three providers as bare
+# A real external consumer: imports @fnconfig/config + the three providers as bare
 # specifiers, each resolved at runtime by `node` through its symlink to the
 # package's BUILT DIST (import/default export condition). Plain `tsc` compiles
 # this example's own src into dist -- no bundler, no transformer. The add*

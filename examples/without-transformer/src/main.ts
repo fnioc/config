@@ -1,4 +1,4 @@
-// The plugin-less wiring + entry point for a REAL, runnable @fnioc/config
+// The plugin-less wiring + entry point for a REAL, runnable @fnconfig/config
 // consumer -- no transformer, no decorators, no reflect-metadata. Everything
 // the transformer would otherwise generate is written out by hand here:
 //
@@ -10,7 +10,7 @@
 //      key, an extra key, a wrong primitive kind, or a bare (unwrapped)
 //      optional field on either interface is a COMPILE error here, not a
 //      runtime surprise. This is the actual compile-time check running
-//      against the real, built @fnioc/config package -- not a design sketch.
+//      against the real, built @fnconfig/config package -- not a design sketch.
 //
 // Config layering (last source wins, per key):
 //   appsettings.json -> appsettings.Development.json (optional overlay)
@@ -21,15 +21,15 @@
 // (8080), and Ssl from the Development overlay (true) -- proving all four
 // layers actually take effect, in precedence order.
 
-import { bindConfig, ConfigurationBuilder } from "@fnioc/config";
-import type { SchemaFor } from "@fnioc/config";
+import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
+import type { SchemaFor } from "@fnconfig/config";
 // Bare side-effect imports install addJsonFile / addEnvironmentVariables /
 // addCommandLine onto ConfigurationBuilder from each provider package -- the
 // C# `using Microsoft.Extensions.Configuration.Json;` equivalent. Without
 // these the sugar methods below would not exist (see each provider's README).
-import "@fnioc/config-json";
-import "@fnioc/config-env";
-import "@fnioc/config-commandline";
+import "@fnconfig/json";
+import "@fnconfig/env";
+import "@fnconfig/commandline";
 import { DiBuilder, forCtor } from "@fnioc/di";
 
 import type { DatabaseConfig, ServerConfig } from "./contracts.js";
@@ -69,7 +69,7 @@ const services = new DiBuilder<"singleton">();
 // @fnioc/di's real, published override path is `.register(token, spec)`
 // with a `{ useFactory, tag }` spec -- there is no `addFactory(token, fn).as(scope)`
 // sugar on `DiBuilder` (see README.md in this directory for why that matters).
-// @fnioc/config contributes no new DI primitive at all here -- only
+// @fnconfig/config contributes no new DI primitive at all here -- only
 // `bindConfig()` (the runtime binder) and `ConfigurationBuilder`/the sources above.
 //
 // NOTE: `bindConfig`'s `T` is given an explicit type argument below. It does
@@ -109,7 +109,7 @@ const server = root.resolve<ApiServer>(API_SERVER);
 const pool = root.resolve<DatabasePool>(DATABASE_POOL);
 
 const lines = [
-  "=== @fnioc/config -- without transformer ===",
+  "=== @fnconfig/config -- without transformer ===",
   server.describe(),
   pool.describe(),
   `ApiServer instances built: ${ApiServer.built}`,

@@ -8,25 +8,25 @@
 //   1. each provider package exports its Source/Provider runtime symbols, and
 //   2. the three external-provider add* augmentations are actually installed on
 //      the SAME ConfigurationBuilder the consumer imports -- i.e. they survived
-//      each provider being bundled with `@fnioc/config` kept external, and the
+//      each provider being bundled with `@fnconfig/config` kept external, and the
 //      `declare module` survived rollup-plugin-dts. This is the regression the
 //      whole integration package exists to catch.
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { bindConfig, ConfigurationBuilder } from "@fnioc/config";
-import type { SchemaFor } from "@fnioc/config";
-import { CommandLineConfigurationProvider, CommandLineConfigurationSource } from "@fnioc/config-commandline";
-import type { CommandLineConfigurationSourceOptions } from "@fnioc/config-commandline";
+import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
+import type { SchemaFor } from "@fnconfig/config";
+import { CommandLineConfigurationProvider, CommandLineConfigurationSource } from "@fnconfig/commandline";
+import type { CommandLineConfigurationSourceOptions } from "@fnconfig/commandline";
 import {
   defaultVariableNameTransformation,
   EnvironmentVariablesConfigurationProvider,
   EnvironmentVariablesConfigurationSource,
-} from "@fnioc/config-env";
-import type { EnvironmentVariablesConfigurationSourceOptions } from "@fnioc/config-env";
-import { JsonConfigurationProvider, JsonConfigurationSource } from "@fnioc/config-json";
-import type { JsonConfigurationSourceOptions } from "@fnioc/config-json";
+} from "@fnconfig/env";
+import type { EnvironmentVariablesConfigurationSourceOptions } from "@fnconfig/env";
+import { JsonConfigurationProvider, JsonConfigurationSource } from "@fnconfig/json";
+import type { JsonConfigurationSourceOptions } from "@fnconfig/json";
 
 describe("cross-package public surface (built dist)", () => {
   test("each provider package exports its Source and Provider runtime bindings", () => {
@@ -42,7 +42,7 @@ describe("cross-package public surface (built dist)", () => {
   test("the add* augmentations are installed on ConfigurationBuilder's prototype", () => {
     const builder = new ConfigurationBuilder();
     // These exist ONLY if each provider's prototype patch survived bundling
-    // against the same (external) @fnioc/config class this test imports.
+    // against the same (external) @fnconfig/config class this test imports.
     assert.equal(typeof builder.addJsonFile, "function");
     assert.equal(typeof builder.addEnvironmentVariables, "function");
     assert.equal(typeof builder.addCommandLine, "function");
@@ -59,7 +59,7 @@ describe("cross-package public surface (built dist)", () => {
     // Only the command-line augmentation contributes data here; the point is
     // that the fluent chain type-checks and runs with all three providers'
     // declaration merges in the program at once (the multi-augmenter case that
-    // motivated the `@fnioc/config/configuration-builder` subpath).
+    // motivated the `@fnconfig/config/configuration-builder` subpath).
     const root = new ConfigurationBuilder()
       .addCommandLine(["--Host=localhost", "--Port=8080"])
       .build();

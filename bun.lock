@@ -18,10 +18,11 @@
       "name": "@fnioc-examples/without-transformer",
       "version": "0.0.0",
       "dependencies": {
-        "@fnioc/config": "workspace:*",
-        "@fnioc/config-commandline": "workspace:*",
-        "@fnioc/config-env": "workspace:*",
-        "@fnioc/config-json": "workspace:*",
+        "@fnconfig/commandline": "workspace:*",
+        "@fnconfig/config": "workspace:*",
+        "@fnconfig/core": "workspace:*",
+        "@fnconfig/env": "workspace:*",
+        "@fnconfig/json": "workspace:*",
         "@fnioc/di": "^1.0.0",
       },
       "devDependencies": {
@@ -30,47 +31,64 @@
       },
     },
     "packages/config": {
-      "name": "@fnioc/config",
+      "name": "@fnconfig/config",
       "version": "0.0.0",
+      "dependencies": {
+        "@fnconfig/core": "workspace:*",
+      },
     },
     "packages/config-commandline": {
-      "name": "@fnioc/config-commandline",
+      "name": "@fnconfig/commandline",
       "version": "0.0.0",
+      "dependencies": {
+        "@fnconfig/core": "workspace:*",
+      },
       "devDependencies": {
-        "@fnioc/config": "workspace:*",
+        "@fnconfig/config": "workspace:*",
       },
       "peerDependencies": {
-        "@fnioc/config": "workspace:^",
+        "@fnconfig/config": "workspace:^",
       },
     },
     "packages/config-env": {
-      "name": "@fnioc/config-env",
+      "name": "@fnconfig/env",
       "version": "0.0.0",
+      "dependencies": {
+        "@fnconfig/core": "workspace:*",
+      },
       "devDependencies": {
-        "@fnioc/config": "workspace:*",
+        "@fnconfig/config": "workspace:*",
       },
       "peerDependencies": {
-        "@fnioc/config": "workspace:^",
+        "@fnconfig/config": "workspace:^",
       },
     },
     "packages/config-json": {
-      "name": "@fnioc/config-json",
+      "name": "@fnconfig/json",
       "version": "0.0.0",
+      "dependencies": {
+        "@fnconfig/core": "workspace:*",
+      },
       "devDependencies": {
-        "@fnioc/config": "workspace:*",
+        "@fnconfig/config": "workspace:*",
       },
       "peerDependencies": {
-        "@fnioc/config": "workspace:^",
+        "@fnconfig/config": "workspace:^",
       },
+    },
+    "packages/core": {
+      "name": "@fnconfig/core",
+      "version": "0.0.0",
     },
     "packages/integration": {
       "name": "@fnioc/integration",
       "version": "0.0.0",
       "devDependencies": {
-        "@fnioc/config": "workspace:*",
-        "@fnioc/config-commandline": "workspace:*",
-        "@fnioc/config-env": "workspace:*",
-        "@fnioc/config-json": "workspace:*",
+        "@fnconfig/commandline": "workspace:*",
+        "@fnconfig/config": "workspace:*",
+        "@fnconfig/core": "workspace:*",
+        "@fnconfig/env": "workspace:*",
+        "@fnconfig/json": "workspace:*",
         "@fnioc/di": "^1.0.0",
         "@types/node": "^24.13.2",
       },
@@ -117,15 +135,17 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.2", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="],
 
+    "@fnconfig/commandline": ["@fnconfig/commandline@workspace:packages/config-commandline"],
+
+    "@fnconfig/config": ["@fnconfig/config@workspace:packages/config"],
+
+    "@fnconfig/core": ["@fnconfig/core@workspace:packages/core"],
+
+    "@fnconfig/env": ["@fnconfig/env@workspace:packages/config-env"],
+
+    "@fnconfig/json": ["@fnconfig/json@workspace:packages/config-json"],
+
     "@fnioc-examples/without-transformer": ["@fnioc-examples/without-transformer@workspace:examples/without-transformer"],
-
-    "@fnioc/config": ["@fnioc/config@workspace:packages/config"],
-
-    "@fnioc/config-commandline": ["@fnioc/config-commandline@workspace:packages/config-commandline"],
-
-    "@fnioc/config-env": ["@fnioc/config-env@workspace:packages/config-env"],
-
-    "@fnioc/config-json": ["@fnioc/config-json@workspace:packages/config-json"],
 
     "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
 

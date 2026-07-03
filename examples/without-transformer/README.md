@@ -1,7 +1,7 @@
 # without-transformer
 
-A real, runnable consumer of `@fnioc/config` + its three provider packages
-(`@fnioc/config-json`, `@fnioc/config-env`, `@fnioc/config-commandline`) + the
+A real, runnable consumer of `@fnconfig/config` + its three provider packages
+(`@fnconfig/json`, `@fnconfig/env`, `@fnconfig/commandline`) + the
 real, published `@fnioc/di` (`^1.0.0`) -- no ts-patch transformer, no
 decorators, no reflect-metadata.
 
@@ -15,7 +15,7 @@ bun run start
 argument, so the printed output is deterministic:
 
 ```
-=== @fnioc/config -- without transformer ===
+=== @fnconfig/config -- without transformer ===
 listening on 0.0.0.0:8080 (tls)
 primary=db-primary.internal/app (pool 10), replica=db-replica.internal/app (pool 5)
 ApiServer instances built: 1
@@ -34,16 +34,16 @@ primary and replica are distinct instances: true
 - **Provider packages via side-effect imports**: `addJsonFile`,
   `addEnvironmentVariables`, and `addCommandLine` are not baked into
   `ConfigurationBuilder` -- each is contributed by its own provider package
-  (`@fnioc/config-json` / `-env` / `-commandline`) through TS declaration
+  (`@fnconfig/json` / `-env` / `-commandline`) through TS declaration
   merging + a prototype patch, mimicking a C# extension method. `src/main.ts`
-  brings them in with bare `import "@fnioc/config-json";` lines (the
+  brings them in with bare `import "@fnconfig/json";` lines (the
   `using Microsoft.Extensions.Configuration.Json;` equivalent) alongside the
-  named `@fnioc/config` import.
+  named `@fnconfig/config` import.
 - **`SchemaFor<T>`-checked hand-written schemas**: `SERVER_CONFIG_SCHEMA` and
   `DATABASE_CONFIG_SCHEMA` in `src/main.ts` are typed `SchemaFor<ServerConfig>`
   / `SchemaFor<DatabaseConfig>`. Get a field wrong -- missing, extra, wrong
   primitive kind, or a bare (unwrapped) optional -- and `tsc` rejects it; this
-  is checked against the real, built `@fnioc/config` package, not a design
+  is checked against the real, built `@fnconfig/config` package, not a design
   sketch.
 - **Constructor injection of bound config**: `ApiServer` takes a bound
   `ServerConfig` in its constructor; wiring is `services.register(token, {

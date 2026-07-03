@@ -20,14 +20,14 @@ import assert from "node:assert/strict";
 import { join } from "node:path";
 import { afterEach, describe, test } from "node:test";
 
-import { bindConfig, ConfigurationBuilder } from "@fnioc/config";
+import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
 // Bare side-effect imports: install addJsonFile / addEnvironmentVariables /
 // addCommandLine onto ConfigurationBuilder.prototype from each provider's
 // built dist -- the C# `using ...;` equivalent, and the whole point of this
 // package's dist-mode run.
-import "@fnioc/config-json";
-import "@fnioc/config-env";
-import "@fnioc/config-commandline";
+import "@fnconfig/json";
+import "@fnconfig/env";
+import "@fnconfig/commandline";
 
 const FIXTURES = join(import.meta.dirname, "fixtures", "config-builder");
 

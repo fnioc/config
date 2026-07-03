@@ -1,6 +1,6 @@
 // End-to-end interop: ConfigurationBuilder -> bindConfig -> @fnioc/di
 // resolution, wired through the REAL published `@fnioc/di` (^1.0.0) and the
-// BUILT DIST of @fnioc/config + all three provider packages (this runs under
+// BUILT DIST of @fnconfig/config + all three provider packages (this runs under
 // `node`, so every `@fnioc/*` bare import resolves to `dist/index.js` -- see
 // moon.yml). This is the test that proves the whole pipeline works TOGETHER
 // through the artefacts a real consumer installs -- the layered config sources
@@ -20,11 +20,11 @@ import assert from "node:assert/strict";
 import { join } from "node:path";
 import { afterEach, describe, test } from "node:test";
 
-import { bindConfig, ConfigurationBuilder } from "@fnioc/config";
-import type { SchemaFor } from "@fnioc/config";
-import "@fnioc/config-json";
-import "@fnioc/config-env";
-import "@fnioc/config-commandline";
+import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
+import type { SchemaFor } from "@fnconfig/config";
+import "@fnconfig/json";
+import "@fnconfig/env";
+import "@fnconfig/commandline";
 import { DiBuilder, forCtor } from "@fnioc/di";
 
 const FIXTURES = join(import.meta.dirname, "fixtures");
