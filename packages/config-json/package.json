@@ -1,14 +1,13 @@
 {
-  "name": "@fnioc/config-json",
+  "name": "@fnconfig/json",
   "version": "0.0.0",
-  "description": "JSON file configuration provider for @fnioc/config: JsonConfigurationSource/Provider + the addJsonFile augmentation.",
+  "description": "JSON file configuration provider for @fnconfig/config: JsonConfigurationSource/Provider + the addJsonFile augmentation.",
   "keywords": [
     "configuration",
     "config",
     "json",
     "ioc",
-    "typescript",
-    "dotnet"
+    "typescript"
   ],
   "license": "MIT",
   "repository": {
@@ -36,11 +35,14 @@
     "test": "moon run config-json:test",
     "lint": "moon run config-json:lint"
   },
+  "dependencies": {
+    "@fnconfig/core": "workspace:*"
+  },
   "peerDependencies": {
-    "@fnioc/config": "workspace:^"
+    "@fnconfig/config": "workspace:^"
   },
   "devDependencies": {
-    "@fnioc/config": "workspace:*"
+    "@fnconfig/config": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

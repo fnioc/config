@@ -1,6 +1,6 @@
-# @fnioc/config-json
+# @fnconfig/json
 
-JSON file configuration provider for `@fnioc/config` — `JsonConfigurationSource`/
+JSON file configuration provider for `@fnconfig/config` — `JsonConfigurationSource`/
 `JsonConfigurationProvider` plus the `addJsonFile` sugar bolted onto
 `ConfigurationBuilder`. Mirrors `Microsoft.Extensions.Configuration.Json`'s
 `AddJsonFile` extension method.
@@ -8,16 +8,16 @@ JSON file configuration provider for `@fnioc/config` — `JsonConfigurationSourc
 ## Install
 
 ```sh
-npm install @fnioc/config @fnioc/config-json
+npm install @fnconfig/config @fnconfig/json
 ```
 
-`@fnioc/config` is a peer dependency — install it alongside this package.
+`@fnconfig/config` is a peer dependency — install it alongside this package.
 
 ## Basic usage
 
 ```ts
-import "@fnioc/config-json"; // unlocks .addJsonFile() on ConfigurationBuilder
-import { ConfigurationBuilder } from "@fnioc/config";
+import "@fnconfig/json"; // unlocks .addJsonFile() on ConfigurationBuilder
+import { ConfigurationBuilder } from "@fnconfig/config";
 
 const config = new ConfigurationBuilder()
   .addJsonFile("appsettings.json")
@@ -36,13 +36,13 @@ of `optional` — it only covers file absence, not file validity.
 `addJsonFile` isn't a method `ConfigurationBuilder` ships with — this package
 bolts it on via TypeScript declaration merging + a runtime prototype patch,
 the same shape as a C# extension method. If your code calls `.addJsonFile()`
-but never names any other symbol from `@fnioc/config-json` (no
+but never names any other symbol from `@fnconfig/json` (no
 `JsonConfigurationSource`, no `JsonConfigurationProvider`), a bundler or
 tree-shaker has nothing forcing it to load this package's module — you must
 import it for its side effect explicitly:
 
 ```ts
-import "@fnioc/config-json"; // unlocks .addJsonFile() on ConfigurationBuilder
+import "@fnconfig/json"; // unlocks .addJsonFile() on ConfigurationBuilder
 ```
 
 This mirrors C#'s `using Microsoft.Extensions.Configuration.Json;` — that

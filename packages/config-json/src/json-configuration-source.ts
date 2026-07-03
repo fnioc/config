@@ -5,7 +5,7 @@
 // plan's rationale for not replicating Microsoft's FileExtensions package for
 // a single file-based provider).
 
-import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnioc/config";
+import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnconfig/core";
 import { JsonConfigurationProvider } from "./json-configuration-provider";
 
 /** Options accepted by {@link JsonConfigurationSource}'s constructor. */

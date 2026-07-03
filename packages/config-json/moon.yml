@@ -4,7 +4,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 layer: 'library'
 language: 'typescript'
 
-# @fnioc/config-json peer-depends on @fnioc/config and keeps it EXTERNAL at
+# @fnconfig/json peer-depends on @fnconfig/config and keeps it EXTERNAL at
 # build time (see build.ts) -- the addJsonFile augmentation patches the
 # CONSUMER's ConfigurationBuilder.prototype, so a private inlined copy would
 # silently break the sugar method. config still needs to be built/typechecked

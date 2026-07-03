@@ -9,7 +9,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { ConfigurationProvider } from "@fnioc/config";
+import { ConfigurationProvider } from "@fnconfig/config";
 import type { JsonConfigurationSource } from "./json-configuration-source";
 
 export class JsonConfigurationProvider extends ConfigurationProvider {

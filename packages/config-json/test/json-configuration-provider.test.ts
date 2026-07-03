@@ -7,7 +7,7 @@
 // ConfigurationBuilder -> JsonConfigurationSource -> ConfigurationRoot path.
 
 import { describe, expect, test } from "bun:test";
-import { ConfigurationBuilder } from "@fnioc/config";
+import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "../src/json-configuration-source";
 // Side-effect import: installs `addJsonFile` onto ConfigurationBuilder.
 import "../src/index";
