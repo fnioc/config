@@ -1,10 +1,9 @@
-// ConfigurationBuilder -- ported behaviorally from dotnet/runtime's
-// Microsoft.Extensions.Configuration.ConfigurationBuilder.
+// ConfigurationBuilder.
 //
 // Ships with ONLY add(source) -- matching IConfigurationBuilder exactly, no
 // addJsonFile/addEnvironmentVariables/etc. baked in. Each provider package
 // (and the in-package Memory provider) bolts its own add* sugar on via TS
-// declaration merging + a runtime prototype assignment, mimicking a C#
+// declaration merging + a runtime prototype assignment, mimicking an
 // extension method. add() therefore returns `this` (not the widened
 // IConfigurationBuilder) so those augmentations type-check without a cast.
 

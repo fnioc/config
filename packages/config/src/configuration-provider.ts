@@ -1,12 +1,10 @@
-// ConfigurationProvider -- abstract base for every provider, ported
-// behaviorally from dotnet/runtime's
-// Microsoft.Extensions.Configuration.ConfigurationProvider.
+// ConfigurationProvider -- abstract base for every provider.
 //
 // Holds a case-insensitive, casing-preserving key/value store: the internal
 // Map is keyed by `key.toLowerCase()` and stores the original-cased key
 // alongside its value. tryGet/set fold case; the first-inserted casing is
-// preserved on later writes (matching a .NET Dictionary<,> with
-// StringComparer.OrdinalIgnoreCase, whose indexer keeps the original key).
+// preserved on later writes (so re-setting an existing key under different
+// casing keeps the casing it was first stored with).
 // load() is a no-op by default -- concrete providers override it.
 
 import type { IConfigurationProvider, ITryGetResult } from "@fnconfig/core";
@@ -43,7 +41,7 @@ export abstract class ConfigurationProvider implements IConfigurationProvider {
 
   /**
    * Case-insensitive write. Preserves the first-inserted casing of the key on
-   * subsequent writes, matching a .NET ordinal-ignore-case dictionary indexer.
+   * subsequent writes.
    */
   public set(key: string, value?: string): void {
     const folded = key.toLowerCase();

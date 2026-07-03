@@ -1,8 +1,7 @@
 // EnvironmentVariablesConfigurationProvider -- loads `process.env` into the
 // case-insensitive ConfigurationProvider store.
 //
-// Transform-before-filter order (adopted from the real Microsoft source):
-// each raw variable name is run through
+// Transform-before-filter order: each raw variable name is run through
 // `source.variableNameTransformation` FIRST (default `__` -> `:`), and only
 // THEN checked against `source.prefix` with a case-insensitive prefix match.
 // This is more correct than filtering on the raw name: a prefix such as

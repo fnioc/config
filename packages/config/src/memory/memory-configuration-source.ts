@@ -1,6 +1,6 @@
-// MemoryConfigurationSource / the initial-data shape it carries. Bundled in
-// core (not a peer package) per Microsoft's actual package layout -- the real
-// Microsoft.Extensions.Configuration.csproj includes the Memory provider.
+// MemoryConfigurationSource / the initial-data shape it carries. Bundled
+// directly into `@fnconfig/config` (not a separate provider package) --
+// an in-memory source is a core building block, not an optional add-on.
 
 import type {
   IConfigurationBuilder,

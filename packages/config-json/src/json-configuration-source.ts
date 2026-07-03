@@ -1,9 +1,8 @@
 // JsonConfigurationSource -- builds a JsonConfigurationProvider bound to a
-// path + the file-existence/optionality options. Mirrors dotnet/runtime's
-// Microsoft.Extensions.Configuration.Json.JsonConfigurationSource, minus the
-// shared FileConfigurationSource base class (folded in directly -- see the
-// plan's rationale for not replicating Microsoft's FileExtensions package for
-// a single file-based provider).
+// path + the file-existence/optionality options. There's no separate shared
+// "file source" base class -- with only one file-based provider in this
+// library, that indirection isn't worth the extra layer, so the path/
+// optionality handling is folded in directly here.
 
 import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnconfig/core";
 import { JsonConfigurationProvider } from "./json-configuration-provider";

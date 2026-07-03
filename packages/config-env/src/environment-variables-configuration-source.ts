@@ -1,5 +1,3 @@
-// EnvironmentVariablesConfigurationSource -- ported behaviorally from
-// dotnet/runtime's Microsoft.Extensions.Configuration.EnvironmentVariables.
 // EnvironmentVariablesConfigurationSource.
 //
 // Two pieces of translation happen when a provider built from this source
@@ -10,8 +8,8 @@
 // prefix like "Foo:Bar:" only becomes visible on a raw variable such as
 // `Foo__Bar__Baz` AFTER the `__` -> `:` transform runs, so the transform must
 // happen before prefix-matching, not after (see the provider for where this
-// is actually applied). Azure connection-string special-casing from the real
-// Microsoft source is deliberately not ported -- no Azure relevance here.
+// is actually applied). There's no connection-string special-casing here --
+// this provider only handles the generic name-transform/prefix-filter path.
 
 import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnconfig/core";
 import { EnvironmentVariablesConfigurationProvider } from "./environment-variables-configuration-provider";
@@ -25,8 +23,8 @@ export interface EnvironmentVariablesConfigurationSourceOptions {
   prefix?: string;
   /**
    * Transforms a raw environment variable name before prefix matching.
-   * Defaults to replacing every `__` with `:`, matching .NET's
-   * `IConfiguration` environment-variable convention.
+   * Defaults to replacing every `__` with `:`, the conventional way to spell
+   * a section-delimited key in an environment variable name.
    */
   variableNameTransformation?: (name: string) => string;
 }

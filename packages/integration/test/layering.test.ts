@@ -101,8 +101,8 @@ describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (buil
   });
 
   test("a conventionally-uppercase environment variable overrides a differently-cased JSON key", () => {
-    // .NET-style usage (and this package's own README/example): env vars are
-    // conventionally UPPERCASE while JSON keys retain their natural casing.
+    // Conventional usage (and this package's own README/example): env vars
+    // are conventionally UPPERCASE while JSON keys retain their natural casing.
     // The case-folding provider store must make the later (env) source win over
     // the earlier (JSON) one instead of both coexisting behind two casings.
     setEnv("FNIOC_TEST_BUILDER_SERVER__PORT", "9999");

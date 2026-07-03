@@ -171,10 +171,9 @@ describe("CommandLineConfigurationProvider -- '/switch' rewrite", () => {
 
   test("does not rewrite a value token that happens to start with '/'", () => {
     // Only a token examined in SWITCH position gets rewritten -- the value
-    // consumed by the preceding switch is untouched, matching the real
-    // dotnet/runtime source (which only rewrites `currentArg` while
-    // classifying the current enumerator position as a switch, not when
-    // reading the following value).
+    // consumed by the preceding switch is untouched. The rewrite only applies
+    // while classifying the current position as a switch, not when reading
+    // the following value.
     expect(load(["--Path", "/usr/bin"])).toEqual({ Path: "/usr/bin" });
   });
 

@@ -1,6 +1,5 @@
 // ConfigurationSection -- a pure (root, path) view with zero independent
-// storage, ported behaviorally from dotnet/runtime's
-// Microsoft.Extensions.Configuration.ConfigurationSection.
+// storage.
 //
 // Every read/write routes back through the owning ConfigurationRoot with the
 // section's path combined onto the requested key, so a section is always a

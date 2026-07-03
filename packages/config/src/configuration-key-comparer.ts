@@ -1,6 +1,5 @@
 // ConfigurationKeyComparer -- segment-by-segment, numeric-aware ordering for
-// configuration keys, ported verbatim (behaviorally) from dotnet/runtime's
-// Microsoft.Extensions.Configuration.ConfigurationKeyComparer.
+// configuration keys.
 //
 // Keys are split on the ':' delimiter and compared one segment at a time:
 //   - both segments parse as integers -> compare numerically (so array
@@ -12,11 +11,10 @@
 import { KeyDelimiter } from "./abstractions/configuration-path";
 
 /**
- * .NET `int.TryParse` (NumberStyles.Integer) analogue: accepts an optional
- * surrounding-whitespace, an optional leading sign, and base-10 digits.
- * Returns `undefined` for anything else (matching TryParse returning false).
- * Values outside the safe-integer range are rejected, mirroring Int32
- * overflow returning false -- config array indices never approach this.
+ * Parses a base-10 integer, accepting optional surrounding whitespace and an
+ * optional leading sign. Returns `undefined` for anything else, including
+ * values outside the safe-integer range -- config array indices never
+ * approach this.
  */
 function tryParseInt(value: string): number | undefined {
   const trimmed = value.trim();
@@ -42,8 +40,7 @@ function compareOrdinalIgnoreCase(x: string, y: string): number {
 
 /**
  * The configuration key comparer. Exposed as a static `compare` function
- * suitable for passing directly to `Array.prototype.sort`, matching how
- * dotnet/runtime exposes `ConfigurationKeyComparer.Instance`.
+ * suitable for passing directly to `Array.prototype.sort`.
  */
 export class ConfigurationKeyComparer {
   private constructor() {}

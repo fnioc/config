@@ -1,6 +1,6 @@
 // Behavior tests for EnvironmentVariablesConfigurationProvider -- loads
 // `process.env` into the ConfigurationProvider contract, filtering by an
-// optional prefix and mapping the .NET-style `__` section separator to `:`.
+// optional prefix and mapping the conventional `__` section separator to `:`.
 //
 // Migrated from the pre-rewrite EnvironmentVariablesSource tests
 // (test/sources/environment-variables.test.ts), rewritten against the new

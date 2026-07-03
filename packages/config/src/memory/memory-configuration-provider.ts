@@ -1,6 +1,6 @@
 // MemoryConfigurationProvider -- copies its source's initial data into the
-// case-insensitive store at construction. No load() override (the data is
-// already present), matching dotnet/runtime's MemoryConfigurationProvider.
+// case-insensitive store at construction. No load() override -- the data is
+// already present at construction time, so there's nothing left to load.
 
 import { ConfigurationProvider } from "../configuration-provider";
 import { type MemoryConfigurationSource, toEntries } from "./memory-configuration-source";

@@ -2,8 +2,7 @@
 //
 // Importing this module installs the `addCommandLine` sugar method onto
 // `ConfigurationBuilder` via the extension-method-mimicking augmentation
-// pattern (TS declaration merging + a runtime prototype assignment) --
-// mirrors C#'s `using Microsoft.Extensions.Configuration.CommandLine;`. A
+// pattern (TS declaration merging + a runtime prototype assignment). A
 // consumer who never names a runtime symbol from this package (only wants
 // the sugar) needs a bare side-effect import: `import
 // "@fnconfig/commandline";`.

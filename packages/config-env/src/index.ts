@@ -2,11 +2,9 @@
 //
 // Bolts `addEnvironmentVariables` sugar onto the shared `ConfigurationBuilder`
 // from @fnconfig/config via TS declaration merging + a runtime prototype
-// assignment, mimicking a C# extension method (see
-// Microsoft.Extensions.Configuration.EnvironmentVariables' own
-// `EnvironmentVariablesExtensions.AddEnvironmentVariables`). A consumer who
-// never names a runtime symbol from this package (only wants the sugar) needs
-// a bare side-effect import: `import "@fnconfig/env";`.
+// assignment, mimicking an extension method. A consumer who never names a
+// runtime symbol from this package (only wants the sugar) needs a bare
+// side-effect import: `import "@fnconfig/env";`.
 
 import { ConfigurationBuilder } from "@fnconfig/config";
 import {

@@ -1,11 +1,11 @@
 // JsonConfigurationProvider -- reads a JSON file from disk and flattens it
-// into the case-insensitive key/value store `ConfigurationProvider` provides,
-// mirroring .NET's JSON configuration provider conventions: nested objects
-// flatten into `Parent:Child` keys, arrays index-flatten into `Parent:0`,
-// `Parent:1`, ..., and scalar leaves are string-converted. `null` leaves (and
-// empty objects/arrays) are omitted entirely -- see the plan's "Resolved
-// behavior decisions" table: KEEP CURRENT, don't adopt Microsoft's
-// present-but-null/empty-string behavior.
+// into the case-insensitive key/value store `ConfigurationProvider` provides:
+// nested objects flatten into `Parent:Child` keys, arrays index-flatten into
+// `Parent:0`, `Parent:1`, ..., and scalar leaves are string-converted. `null`
+// leaves (and empty objects/arrays) are omitted entirely -- a deliberate
+// choice to keep lookups simple (`get()` returning `undefined` means "absent",
+// full stop) rather than also representing "present but null" or "present but
+// empty" as distinct states.
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";

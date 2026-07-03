@@ -3,14 +3,12 @@
 // Exports JsonConfigurationSource/JsonConfigurationProvider and installs the
 // `addJsonFile` sugar onto `@fnconfig/config`'s ConfigurationBuilder via the
 // extension-method-mimicking augmentation pattern (TS declaration merging +
-// a runtime prototype assignment) -- mirrors C#'s
-// `Microsoft.Extensions.Configuration.Json`'s `AddJsonFile` extension method.
+// a runtime prototype assignment).
 //
 // A consumer who never names a runtime symbol from this package (only wants
-// the sugar) needs a bare side-effect import: `import "@fnconfig/json";`
-// -- mirrors C#'s `using Microsoft.Extensions.Configuration.Json;`. This
-// package must NOT set `"sideEffects": false` in package.json (would let a
-// bundler tree-shake the augmentation away).
+// the sugar) needs a bare side-effect import: `import "@fnconfig/json";`.
+// This package must NOT set `"sideEffects": false` in package.json (would
+// let a bundler tree-shake the augmentation away).
 
 import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "./json-configuration-source";

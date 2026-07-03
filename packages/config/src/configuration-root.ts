@@ -1,6 +1,4 @@
-// ConfigurationRoot -- the provider-list engine, ported behaviorally from
-// dotnet/runtime's Microsoft.Extensions.Configuration.ConfigurationRoot (plus
-// its InternalConfigurationRootExtensions.GetChildrenImplementation).
+// ConfigurationRoot -- the provider-list engine.
 //
 // Providers are stored in registration order and eagerly load()ed at
 // construction. Reads resolve LAST-registered-wins by iterating providers in

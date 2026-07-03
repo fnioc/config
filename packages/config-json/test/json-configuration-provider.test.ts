@@ -1,10 +1,10 @@
 // Behavior tests for JsonConfigurationProvider/Source -- reads a JSON file
 // from disk and flattens it into the case-insensitive key/value store shared
-// by every ConfigurationProvider (mirrors .NET's JSON configuration
-// provider). Migrated from the pre-monorepo `test/sources/json-file.test.ts`
-// against the old `JsonFileSource`/`ConfigSource` shapes; same fixtures,
-// same assertions -- exercised here through the real
-// ConfigurationBuilder -> JsonConfigurationSource -> ConfigurationRoot path.
+// by every ConfigurationProvider. Migrated from the pre-monorepo
+// `test/sources/json-file.test.ts` against the old
+// `JsonFileSource`/`ConfigSource` shapes; same fixtures, same assertions --
+// exercised here through the ConfigurationBuilder -> JsonConfigurationSource
+// -> ConfigurationRoot path.
 
 import { describe, expect, test } from "bun:test";
 import { ConfigurationBuilder } from "@fnconfig/config";

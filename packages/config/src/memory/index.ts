@@ -3,11 +3,11 @@
 // Even though the Memory provider lives in the same package as
 // ConfigurationBuilder, its sugar method is installed via the SAME
 // extension-method-mimicking pattern the external provider packages use (TS
-// declaration merging + a runtime prototype assignment) -- faithful to
-// Microsoft's own ConfigurationBuilder, which carries no add* sugar of its
-// own, only extension methods, even for same-assembly Memory. The augmentation
-// targets the module that DECLARES the class so the merge survives the
-// re-export through the package barrel.
+// declaration merging + a runtime prototype assignment) -- `ConfigurationBuilder`
+// itself carries no add* sugar of its own, only augmentations, even for the
+// in-package Memory provider. The augmentation targets the module that
+// DECLARES the class so the merge survives the re-export through the package
+// barrel.
 
 import { ConfigurationBuilder } from "../configuration-builder";
 import { type ConfigurationData, MemoryConfigurationSource } from "./memory-configuration-source";

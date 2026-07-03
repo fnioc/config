@@ -1,7 +1,7 @@
 // bindConfig -- walks a SchemaFor<T> against an IConfiguration (via
 // get/getSection/getChildren) and produces a typed T.
 //
-// Mirrors .NET's Options validation model: every problem in the whole shape
+// Aggregating validation model: every problem in the whole shape
 // is collected before anything is thrown. A single bad number three levels
 // deep doesn't hide a missing key at the top -- both show up together in
 // one ConfigBindError, so a caller fixing config can fix everything in one
@@ -56,9 +56,9 @@ function isOptionalSchema(schema: Schema): schema is { optional: Schema } {
 
 /**
  * Whether a section actually exists -- has a value directly, or has any child
- * sections. Mirrors .NET's `ConfigurationExtensions.Exists`. A section object
- * is always returned by `getSection` (never null), so presence is decided by
- * whether anything lives at or under its path.
+ * sections. A section object is always returned by `getSection` (never
+ * null), so presence is decided by whether anything lives at or under its
+ * path.
  */
 function sectionExists(section: IConfigurationSection): boolean {
   if (section.value !== undefined) {
@@ -182,7 +182,7 @@ function bindObject(
 /**
  * Binds an `IConfiguration` (optionally narrowed to `opts.section` first) into
  * a typed `T`, per `schema`. Key matching against schema property names is
- * case-insensitive, matching .NET's config binder.
+ * case-insensitive.
  *
  * Every issue across the whole shape is collected before anything is
  * thrown -- see the module doc comment. Throws a single `ConfigBindError`

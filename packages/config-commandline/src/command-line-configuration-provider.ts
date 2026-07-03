@@ -5,35 +5,26 @@
 // switchMappings (validated at construction time -- see
 // command-line-configuration-source.ts).
 //
-// This is this repo's pre-existing, already-tested fail-loud parse loop
-// (ported verbatim from the pre-monorepo `CommandLineSource`), deliberately
-// KEPT rather than reverted to match Microsoft's real
-// CommandLineConfigurationProvider.Load(), which silently ignores both an
-// unmapped short switch (with no "=") and any switch with no trailing value
-// -- confirmed against the real dotnet/runtime source this session. That's
-// back-compat baggage, not a virtue: a CLI configuration source should error
-// on unparseable input, not silently drop config the caller thought they'd
-// supplied.
+// This is this repo's pre-existing, already-tested fail-loud parse loop:
+// an unmapped short switch (with no "=") or any switch with no trailing
+// value is a thrown error, not a silently dropped entry -- a CLI
+// configuration source should error on unparseable input, not silently drop
+// config the caller thought they'd supplied.
 //
-// The ONE behavior adopted from Microsoft on top of the kept baseline is the
-// "/switch" -> "--switch" rewrite (real dotnet/runtime comment: "'/SomeSwitch'
-// is equivalent to '--SomeSwitch' when interpreting switch mappings"). It
-// applies only to a token being examined in switch position (the top of each
-// main-loop iteration) -- never to a token consumed as another switch's
-// *value*, so `--Path /usr/bin` is untouched. This matches the real
-// source, which only rewrites `currentArg` at the point where it's
-// classifying the current enumerator position as a switch, not when it reads
-// the following value via a second `MoveNext()`.
+// One rewrite runs on top of that fail-loud baseline: "/switch" is treated
+// the same as "--switch" ("'/SomeSwitch' is equivalent to '--SomeSwitch' when
+// interpreting switch mappings"). It applies only to a token being examined
+// in switch position (the top of each main-loop iteration) -- never to a
+// token consumed as another switch's *value*, so `--Path /usr/bin` is
+// untouched.
 
 import { ConfigurationProvider } from "@fnconfig/config";
 
 export class CommandLineConfigurationProvider extends ConfigurationProvider {
   private readonly argv: readonly string[];
   /** Switch mapping lookup, keyed by lower-cased mapping key for
-   * case-insensitive matching -- mirrors Microsoft's switchMappings
-   * dictionary, which is itself `StringComparer.OrdinalIgnoreCase`-backed
-   * (the same dictionary construction-time validation runs against; see
-   * `GetValidatedSwitchMappingsCopy` in the real source). */
+   * case-insensitive matching -- the same folded form the construction-time
+   * validation runs against (see command-line-configuration-source.ts). */
   private readonly foldedSwitchMappings: Map<string, string>;
 
   public constructor(argv: readonly string[], switchMappings: Record<string, string>) {

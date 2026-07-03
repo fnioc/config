@@ -56,7 +56,7 @@ Baked into the shipped MVP (PRs #4/#5/#6). Revisit only if a real need
 surfaces:
 
 - **Last-source-wins flat merge** (not deep merge) across JSON/env/CLI
-  sources, mirroring .NET's `IConfiguration` model.
+  sources.
 - **Case-insensitive resolution everywhere** — keys, sections,
   `opts.section` — meaning two differently-cased keys can never coexist
   as distinct entries.

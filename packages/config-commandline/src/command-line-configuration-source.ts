@@ -1,8 +1,5 @@
 // CommandLineConfigurationSource -- source-side construction, including
-// construction-time switchMappings validation ported from dotnet/runtime's
-// Microsoft.Extensions.Configuration.CommandLine
-// CommandLineConfigurationProvider.GetValidatedSwitchMappingsCopy (verified
-// against the real source this session):
+// construction-time switchMappings validation:
 //
 //   - every switchMappings key must start with "-" (covers both "-x" and
 //     "--LongForm" mapping keys);
@@ -12,14 +9,12 @@
 // Both checks run eagerly here, at construction time, rather than lazily
 // during parsing -- a malformed switchMappings table should fail the moment
 // it's built, not only when the CLI happens to exercise the affected switch.
-// This mirrors Microsoft's own validation, which also runs in the
-// constructor (`GetValidatedSwitchMappingsCopy`), not in `Load()`.
 //
 // Everything else about parsing (the fail-loud behavior in
 // command-line-configuration-provider.ts) is this repo's pre-existing,
-// already-tested baseline -- deliberately NOT reverted to Microsoft's
-// silent-ignore-on-unmapped-switch/missing-value behavior. See that file's
-// module doc comment for the full rationale.
+// already-tested baseline -- deliberately NOT a silent-ignore-on-unmapped-
+// switch/missing-value behavior. See that file's module doc comment for the
+// full rationale.
 
 import type {
   IConfigurationBuilder,
@@ -41,10 +36,9 @@ export interface CommandLineConfigurationSourceOptions {
 }
 
 /**
- * Validates `switchMappings` the way Microsoft's
- * `GetValidatedSwitchMappingsCopy` does, throwing synchronously on the first
- * violation found (iteration order is `Object.keys` insertion order, so the
- * error is deterministic).
+ * Validates `switchMappings`, throwing synchronously on the first violation
+ * found (iteration order is `Object.keys` insertion order, so the error is
+ * deterministic).
  */
 function validateSwitchMappings(switchMappings: Record<string, string>): void {
   const seenByFoldedKey = new Map<string, string>();
