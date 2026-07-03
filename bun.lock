@@ -80,7 +80,7 @@
       "version": "0.0.0",
     },
     "packages/integration": {
-      "name": "@fnioc/integration",
+      "name": "@fnconfig/integration",
       "version": "0.0.0",
       "devDependencies": {
         "@fnconfig/commandline": "workspace:*",
@@ -88,7 +88,6 @@
         "@fnconfig/core": "workspace:*",
         "@fnconfig/env": "workspace:*",
         "@fnconfig/json": "workspace:*",
-        "@fnioc/di": "^1.0.0",
         "@types/node": "^24.13.2",
       },
     },
@@ -144,13 +143,9 @@
 
     "@fnconfig/env": ["@fnconfig/env@workspace:packages/config-env"],
 
+    "@fnconfig/integration": ["@fnconfig/integration@workspace:packages/integration"],
+
     "@fnconfig/json": ["@fnconfig/json@workspace:packages/config-json"],
-
-    "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
-
-    "@fnioc/di": ["@fnioc/di@1.0.0", "", { "peerDependencies": { "@fnioc/core": "^1.0.0" } }, "sha512-3Z5z7aj6Sagd9e4nlH90QdEeGKf0X6z0s4/k9gFUcN1rGaU/yyilcQVfrlzFZr/SasDJIrJtvoUrp6VnfW7AOg=="],
-
-    "@fnioc/integration": ["@fnioc/integration@workspace:packages/integration"],
 
     "@humanfs/core": ["@humanfs/core@0.19.2", "", { "dependencies": { "@humanfs/types": "^0.15.0" } }, "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA=="],
 

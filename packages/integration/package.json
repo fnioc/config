@@ -1,8 +1,8 @@
 {
-  "name": "@fnioc/integration",
+  "name": "@fnconfig/integration",
   "private": true,
   "version": "0.0.0",
-  "description": "End-to-end integration tests against the BUILT DIST of @fnconfig/config + the three provider packages, plus @fnioc/di interop. Proves the ConfigurationBuilder add* augmentation survives bundling -- the one place a sideEffects/tree-shaking or rollup-plugin-dts regression would surface. Not published.",
+  "description": "End-to-end integration tests against the BUILT DIST of @fnconfig/config + the three provider packages. Proves the ConfigurationBuilder add* augmentation survives bundling -- the one place a sideEffects/tree-shaking or rollup-plugin-dts regression would surface. Not published.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -15,7 +15,6 @@
     "@fnconfig/commandline": "workspace:*",
     "@fnconfig/env": "workspace:*",
     "@fnconfig/json": "workspace:*",
-    "@fnioc/di": "^1.0.0",
     "@types/node": "^24.13.2"
   }
 }
