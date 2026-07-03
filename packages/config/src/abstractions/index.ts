@@ -1,8 +1,6 @@
-// Ported Microsoft.Extensions.Configuration.Abstractions surface.
-//
-// ConfigurationKeyNameDecorator is intentionally NOT re-exported (nor kept):
-// it was a reflection-attribute stand-in with no reflection to back it and no
-// consumer anywhere in this codebase.
+// The configuration abstraction types (the IConfiguration* interface family +
+// ITryGetResult) now live in the types-only @fnconfig/core package. This barrel
+// keeps the runtime configPath helpers (combine / getSectionKey / getParentPath
+// / KeyDelimiter) that stay in @fnconfig/config.
 
-export * from './abstractions'
 export * as configPath from './configuration-path'

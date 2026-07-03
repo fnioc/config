@@ -9,7 +9,7 @@
 // StringComparer.OrdinalIgnoreCase, whose indexer keeps the original key).
 // load() is a no-op by default -- concrete providers override it.
 
-import type { IConfigurationProvider, ITryGetResult } from "./abstractions/abstractions";
+import type { IConfigurationProvider, ITryGetResult } from "@fnconfig/core";
 import { KeyDelimiter } from "./abstractions/configuration-path";
 import { ConfigurationKeyComparer } from "./configuration-key-comparer";
 

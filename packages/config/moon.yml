@@ -4,7 +4,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 layer: 'library'
 language: 'typescript'
 
-# @fnioc/config is the faithful-port core engine. It has no workspace deps and
+# @fnconfig/config is the faithful-port core engine. It has no workspace deps and
 # no real runtime deps, so nothing is externalized at build time and it depends
 # on no other project.
 

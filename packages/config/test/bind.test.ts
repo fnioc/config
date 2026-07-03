@@ -11,8 +11,8 @@
 // `new ConfigurationRoot(new Map(...))`.
 
 import { describe, expect, test } from "bun:test";
-import { bindConfig, ConfigBindError } from "@fnioc/config";
-import type { SchemaFor } from "@fnioc/config";
+import { bindConfig, ConfigBindError } from "@fnconfig/config";
+import type { SchemaFor } from "@fnconfig/config";
 import { rootOf } from "./support";
 
 interface ServerConfig {

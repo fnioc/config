@@ -6,7 +6,7 @@ import type {
   IConfigurationBuilder,
   IConfigurationProvider,
   IConfigurationSource,
-} from "../abstractions/abstractions";
+} from "@fnconfig/core";
 import { MemoryConfigurationProvider } from "./memory-configuration-provider";
 
 /**

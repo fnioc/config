@@ -15,7 +15,7 @@
 // and `tsc` fails the build with "Unused '@ts-expect-error' directive".
 
 import { describe, expect, test } from "bun:test";
-import type { SchemaFor } from "@fnioc/config";
+import type { SchemaFor } from "@fnconfig/config";
 
 interface Nested {
   value: string;

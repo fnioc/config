@@ -11,7 +11,7 @@ import type {
   IConfigurationProvider,
   IConfigurationRoot,
   IConfigurationSection,
-} from "./abstractions/abstractions";
+} from "@fnconfig/core";
 import { combine } from "./abstractions/configuration-path";
 import { ConfigurationSection } from "./configuration-section";
 

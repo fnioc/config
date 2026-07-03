@@ -1,4 +1,4 @@
-// Public entry-point surface for @fnioc/config -- verifies the core symbols a
+// Public entry-point surface for @fnconfig/config -- verifies the core symbols a
 // consumer (and the provider packages) need are reachable off the barrel, that
 // ConfigurationBuilder ships plain add() + build(), that the abstract
 // ConfigurationProvider base is subclassable, and that a root builds and binds
@@ -16,7 +16,7 @@ import {
   configPath,
   MemoryConfigurationProvider,
   MemoryConfigurationSource,
-} from "@fnioc/config";
+} from "@fnconfig/config";
 import type {
   BindOptions,
   IConfiguration,
@@ -29,7 +29,7 @@ import type {
   ITryGetResult,
   Schema,
   SchemaFor,
-} from "@fnioc/config";
+} from "@fnconfig/config";
 
 describe("public entry point", () => {
   test("exports the core value bindings a consumer and the provider packages need", () => {

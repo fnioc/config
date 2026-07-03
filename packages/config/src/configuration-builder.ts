@@ -13,7 +13,7 @@ import type {
   IConfigurationProvider,
   IConfigurationRoot,
   IConfigurationSource,
-} from "./abstractions/abstractions";
+} from "@fnconfig/core";
 import { ConfigurationRoot } from "./configuration-root";
 
 export class ConfigurationBuilder implements IConfigurationBuilder {

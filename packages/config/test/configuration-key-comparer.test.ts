@@ -4,7 +4,7 @@
 // which had no comparer at all and enumerated keys in insertion order.
 
 import { describe, expect, test } from "bun:test";
-import { ConfigurationKeyComparer } from "@fnioc/config";
+import { ConfigurationKeyComparer } from "@fnconfig/config";
 
 const cmp = ConfigurationKeyComparer.compare;
 const sign = (n: number): number => (n < 0 ? -1 : n > 0 ? 1 : 0);

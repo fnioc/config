@@ -12,7 +12,7 @@
 // no longer hand-rolls the raw-casing key/segment scans the single-Map MVP
 // needed -- it just walks IConfiguration, which folds case internally.
 
-import type { IConfiguration, IConfigurationSection } from "./abstractions/abstractions";
+import type { IConfiguration, IConfigurationSection } from "@fnconfig/core";
 import type { Schema, SchemaFor } from "./schema";
 
 /** Options accepted by {@link bindConfig}. */

@@ -6,7 +6,7 @@
 // section's path combined onto the requested key, so a section is always a
 // live window over the root's providers, never a snapshot.
 
-import type { IConfiguration, IConfigurationSection } from "./abstractions/abstractions";
+import type { IConfiguration, IConfigurationSection } from "@fnconfig/core";
 import { combine, getSectionKey } from "./abstractions/configuration-path";
 import type { ConfigurationRoot } from "./configuration-root";
 

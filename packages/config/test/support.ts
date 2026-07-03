@@ -4,8 +4,8 @@
 // production ConfigurationBuilder -> MemoryConfigurationSource ->
 // ConfigurationRoot path rather than hand-constructing an internal map.
 
-import { type ConfigurationData, ConfigurationBuilder } from "@fnioc/config";
-import type { IConfigurationRoot } from "@fnioc/config";
+import { type ConfigurationData, ConfigurationBuilder } from "@fnconfig/config";
+import type { IConfigurationRoot } from "@fnconfig/config";
 
 /** Builds a ConfigurationRoot from in-memory `entries` (a Record or `[k,v]` iterable). */
 export function rootOf(entries: ConfigurationData): IConfigurationRoot {

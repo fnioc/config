@@ -6,7 +6,7 @@
 // root.
 
 import { describe, expect, test } from "bun:test";
-import { ConfigurationBuilder, type IConfigurationProvider } from "@fnioc/config";
+import { ConfigurationBuilder, type IConfigurationProvider } from "@fnconfig/config";
 import { rootOf } from "./support";
 
 /** Builds a root over N in-memory providers, one per data record (registration order). */

@@ -1,4 +1,4 @@
-// Build @fnioc/config for publication.
+// Build @fnconfig/config for publication.
 //
 // This repo standardized on `moduleResolution: bundler` + extensionless
 // relative imports (see /tsconfig.base.json). A plain `tsc` emit would leave
@@ -33,7 +33,7 @@ if (!js.success) {
   for (const log of js.logs) {
     console.error(log);
   }
-  throw new Error("@fnioc/config: bun build failed");
+  throw new Error("@fnconfig/config: bun build failed");
 }
 
 // 2. Rolled-up .d.ts — the whole public type surface in one file.
@@ -43,5 +43,5 @@ const dts = spawnSync(
   { cwd: PKG_ROOT, stdio: "inherit" },
 );
 if (dts.status !== 0) {
-  throw new Error("@fnioc/config: rollup d.ts bundling failed");
+  throw new Error("@fnconfig/config: rollup d.ts bundling failed");
 }

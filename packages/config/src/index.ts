@@ -1,16 +1,21 @@
-// Public entry point for @fnioc/config -- the faithful-port core engine.
+// Public entry point for @fnconfig/config -- the faithful-port core engine.
 //
 // Exports the ported abstractions (IConfiguration* interfaces + the configPath
 // helpers), the engine classes (ConfigurationBuilder / ConfigurationRoot /
 // ConfigurationSection / the abstract ConfigurationProvider base /
 // ConfigurationKeyComparer), the bundled Memory provider + its
 // addInMemoryCollection augmentation, and the compile-time-checked schema
-// binder. Provider packages (@fnioc/config-json/-env/-commandline) peer-depend
+// binder. Provider packages (@fnconfig/json/-env/-commandline) peer-depend
 // on this package, extend ConfigurationProvider, implement IConfigurationSource,
 // and augment ConfigurationBuilder with their own add* sugar.
 
-// Ported abstractions: IConfiguration/-Builder/-Root/-Section/-Source/
-// -Provider/-Manager, ITryGetResult, and the `configPath` helper namespace.
+// The abstraction types (IConfiguration/-Builder/-Root/-Section/-Source/
+// -Provider/-Manager + ITryGetResult) now live in @fnconfig/core. Re-export
+// them so consumers importing them from @fnconfig/config keep working --
+// config's public surface stays a superset of core's.
+export type * from "@fnconfig/core";
+
+// The runtime `configPath` helper namespace stays in this package.
 export * from "./abstractions";
 
 // Engine.

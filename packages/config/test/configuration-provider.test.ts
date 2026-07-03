@@ -4,7 +4,7 @@
 // provider abstraction and no per-provider child-key enumeration at all.
 
 import { describe, expect, test } from "bun:test";
-import { MemoryConfigurationProvider, MemoryConfigurationSource } from "@fnioc/config";
+import { MemoryConfigurationProvider, MemoryConfigurationSource } from "@fnconfig/config";
 
 function providerOf(data: Record<string, string>): MemoryConfigurationProvider {
   return new MemoryConfigurationProvider(new MemoryConfigurationSource({ initialData: data }));
