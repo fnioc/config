@@ -4,11 +4,11 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 layer: 'library'
 language: 'typescript'
 
-# @fnioc/config-commandline peer-depends on @fnioc/config and keeps it
+# @fnconfig/commandline peer-depends on @fnconfig/config and keeps it
 # EXTERNAL at build time (never inlined) -- the extension-method-mimicking
 # augmentation pattern (addCommandLine patched onto ConfigurationBuilder.prototype)
 # only works if this package's runtime touches the SAME ConfigurationBuilder
-# class the consumer's own @fnioc/config import resolves to. Inlining core
+# class the consumer's own @fnconfig/config import resolves to. Inlining core
 # would create a second, private copy whose prototype the consumer never
 # touches.
 dependsOn:

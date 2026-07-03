@@ -25,7 +25,7 @@ import type {
   IConfigurationBuilder,
   IConfigurationProvider,
   IConfigurationSource,
-} from "@fnioc/config";
+} from "@fnconfig/core";
 import { CommandLineConfigurationProvider } from "./command-line-configuration-provider";
 
 /** Options accepted by {@link CommandLineConfigurationSource}'s constructor. */

@@ -25,7 +25,7 @@
 // classifying the current enumerator position as a switch, not when it reads
 // the following value via a second `MoveNext()`.
 
-import { ConfigurationProvider } from "@fnioc/config";
+import { ConfigurationProvider } from "@fnconfig/config";
 
 export class CommandLineConfigurationProvider extends ConfigurationProvider {
   private readonly argv: readonly string[];

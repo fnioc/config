@@ -1,6 +1,6 @@
-# @fnioc/config-commandline
+# @fnconfig/commandline
 
-Command-line configuration provider for `@fnioc/config` —
+Command-line configuration provider for `@fnconfig/config` —
 `CommandLineConfigurationSource`/`CommandLineConfigurationProvider` plus the
 `addCommandLine` sugar bolted onto `ConfigurationBuilder`. Mirrors
 `Microsoft.Extensions.Configuration.CommandLine`'s `AddCommandLine` extension
@@ -9,16 +9,16 @@ method.
 ## Install
 
 ```sh
-npm install @fnioc/config @fnioc/config-commandline
+npm install @fnconfig/config @fnconfig/commandline
 ```
 
-`@fnioc/config` is a peer dependency — install it alongside this package.
+`@fnconfig/config` is a peer dependency — install it alongside this package.
 
 ## Basic usage
 
 ```ts
-import "@fnioc/config-commandline"; // unlocks .addCommandLine() on ConfigurationBuilder
-import { ConfigurationBuilder } from "@fnioc/config";
+import "@fnconfig/commandline"; // unlocks .addCommandLine() on ConfigurationBuilder
+import { ConfigurationBuilder } from "@fnconfig/config";
 
 const config = new ConfigurationBuilder()
   .addCommandLine(process.argv.slice(2), { "-p": "Server:Port" })
@@ -41,12 +41,12 @@ silently drop config.
 package bolts it on via TypeScript declaration merging + a runtime prototype
 patch, the same shape as a C# extension method. If your code calls
 `.addCommandLine()` but never names any other symbol from
-`@fnioc/config-commandline`, a bundler or tree-shaker has nothing forcing it
+`@fnconfig/commandline`, a bundler or tree-shaker has nothing forcing it
 to load this package's module — you must import it for its side effect
 explicitly:
 
 ```ts
-import "@fnioc/config-commandline"; // unlocks .addCommandLine() on ConfigurationBuilder
+import "@fnconfig/commandline"; // unlocks .addCommandLine() on ConfigurationBuilder
 ```
 
 This mirrors C#'s `using Microsoft.Extensions.Configuration.CommandLine;` —

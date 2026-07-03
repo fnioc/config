@@ -1,7 +1,7 @@
 {
-  "name": "@fnioc/config-commandline",
+  "name": "@fnconfig/commandline",
   "version": "0.0.0",
-  "description": "Command-line configuration provider for @fnioc/config: CommandLineConfigurationSource/Provider + the addCommandLine augmentation.",
+  "description": "Command-line configuration provider for @fnconfig/config: CommandLineConfigurationSource/Provider + the addCommandLine augmentation.",
   "keywords": [
     "configuration",
     "config",
@@ -9,8 +9,7 @@
     "cli",
     "argv",
     "ioc",
-    "typescript",
-    "dotnet"
+    "typescript"
   ],
   "license": "MIT",
   "repository": {
@@ -38,11 +37,14 @@
     "test": "moon run config-commandline:test",
     "lint": "moon run config-commandline:lint"
   },
+  "dependencies": {
+    "@fnconfig/core": "workspace:*"
+  },
   "peerDependencies": {
-    "@fnioc/config": "workspace:^"
+    "@fnconfig/config": "workspace:^"
   },
   "devDependencies": {
-    "@fnioc/config": "workspace:*"
+    "@fnconfig/config": "workspace:*"
   },
   "publishConfig": {
     "access": "public",
