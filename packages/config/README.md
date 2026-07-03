@@ -1,15 +1,17 @@
 # @fnconfig/config
 
-A faithful TypeScript port of `Microsoft.Extensions.Configuration`: layered,
-provider-based configuration with last-source-wins precedence, case-insensitive
-key resolution, and a compile-time-checked schema binder.
+Layered, provider-based configuration for TypeScript: build a configuration
+tree out of multiple sources, resolve keys with last-source-wins precedence
+and case-insensitive matching, and bind the result to a typed schema at
+compile time.
 
-This package is the core — `ConfigurationBuilder`/`ConfigurationRoot`/
-`ConfigurationSection`, the abstract `ConfigurationProvider` base, the ported
-`IConfiguration*` abstractions, `ConfigurationKeyComparer`, the bundled Memory
-provider, and `bindConfig`. It has no file/env/CLI sources of its own beyond
-Memory — install `@fnconfig/json`, `@fnconfig/env`, and/or
-`@fnconfig/commandline` alongside it for those.
+This package is the engine — `ConfigurationBuilder`/`ConfigurationRoot`/
+`ConfigurationSection`, the abstract `ConfigurationProvider` base, the
+`IConfiguration*` abstractions (re-exported from `@fnconfig/core`),
+`ConfigurationKeyComparer`, the bundled Memory provider, and `bindConfig`. It
+has no file/env/CLI sources of its own beyond Memory — install
+`@fnconfig/json`, `@fnconfig/env`, and/or `@fnconfig/commandline` alongside
+it for those.
 
 ## Install
 
@@ -51,22 +53,20 @@ const app = bindConfig<AppConfig>(config);
 ```
 
 Sources are checked **last-registered first**: `addEnvironmentVariables()`
-here overrides anything `addJsonFile()` loaded for the same key, mirroring
-.NET's `IConfiguration` layering model.
+here overrides anything `addJsonFile()` loaded for the same key.
 
 ## Providers need a side-effect import
 
 Every `add*` method (`addJsonFile`, `addEnvironmentVariables`,
 `addCommandLine`) is bolted onto `ConfigurationBuilder` by its own provider
-package via TypeScript declaration merging + a runtime prototype patch — the
-same shape as a C# extension method. If your code only calls `.addJsonFile()`
-and never names another symbol from `@fnconfig/json`, you still need to
-import the package for its side effect:
+package via TypeScript declaration merging plus a runtime prototype patch.
+If your code only calls `.addJsonFile()` and never names another symbol from
+`@fnconfig/json`, you still need to import the package for its side effect:
 
 ```ts
 import "@fnconfig/json"; // unlocks .addJsonFile() on ConfigurationBuilder
 ```
 
-This mirrors C#'s `using Microsoft.Extensions.Configuration.Json;` — the
-`using` doesn't reference a type either, it just brings the extension method
-into scope.
+A bundler or tree-shaker has nothing else forcing that module to load, since
+no value is actually referenced — the import exists purely to run the
+augmentation.

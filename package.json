@@ -2,7 +2,7 @@
   "name": "config-monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": "Faithful Microsoft.Extensions.Configuration port for @fnioc/di (monorepo root; individual packages publish to npm under @fnioc)",
+  "description": "Layered, provider-based configuration for TypeScript (monorepo root; individual packages publish to npm under @fnconfig)",
   "license": "MIT",
   "type": "module",
   "workspaces": [
