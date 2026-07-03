@@ -1,7 +1,7 @@
 {
-  "name": "@fnioc/config-env",
+  "name": "@fnconfig/env",
   "version": "0.0.0",
-  "description": "process.env configuration provider for @fnioc/config: EnvironmentVariablesConfigurationSource/Provider + the addEnvironmentVariables augmentation.",
+  "description": "process.env configuration provider for @fnconfig/config: EnvironmentVariablesConfigurationSource/Provider + the addEnvironmentVariables augmentation.",
   "keywords": [
     "configuration",
     "config",
@@ -9,8 +9,7 @@
     "environment-variables",
     "options",
     "ioc",
-    "typescript",
-    "dotnet"
+    "typescript"
   ],
   "license": "MIT",
   "repository": {
@@ -38,11 +37,14 @@
     "test": "moon run config-env:test",
     "lint": "moon run config-env:lint"
   },
+  "dependencies": {
+    "@fnconfig/core": "workspace:*"
+  },
   "peerDependencies": {
-    "@fnioc/config": "workspace:^"
+    "@fnconfig/config": "workspace:^"
   },
   "devDependencies": {
-    "@fnioc/config": "workspace:*"
+    "@fnconfig/config": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

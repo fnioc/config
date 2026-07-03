@@ -11,7 +11,7 @@
 // drop variables a caller reasonably expects to match. Costs nothing given
 // the base ConfigurationProvider's case-insensitive store.
 
-import { ConfigurationProvider } from "@fnioc/config";
+import { ConfigurationProvider } from "@fnconfig/config";
 import type { EnvironmentVariablesConfigurationSource } from "./environment-variables-configuration-source";
 
 export class EnvironmentVariablesConfigurationProvider extends ConfigurationProvider {

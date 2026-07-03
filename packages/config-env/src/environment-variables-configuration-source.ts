@@ -13,7 +13,7 @@
 // is actually applied). Azure connection-string special-casing from the real
 // Microsoft source is deliberately not ported -- no Azure relevance here.
 
-import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnioc/config";
+import type { IConfigurationBuilder, IConfigurationProvider, IConfigurationSource } from "@fnconfig/core";
 import { EnvironmentVariablesConfigurationProvider } from "./environment-variables-configuration-provider";
 
 /** Options accepted by {@link EnvironmentVariablesConfigurationSource}. */

@@ -1,6 +1,6 @@
-# @fnioc/config-env
+# @fnconfig/env
 
-Environment-variable configuration provider for `@fnioc/config` —
+Environment-variable configuration provider for `@fnconfig/config` —
 `EnvironmentVariablesConfigurationSource`/`EnvironmentVariablesConfigurationProvider`
 plus the `addEnvironmentVariables` sugar bolted onto `ConfigurationBuilder`.
 Mirrors `Microsoft.Extensions.Configuration.EnvironmentVariables`'s
@@ -9,16 +9,16 @@ Mirrors `Microsoft.Extensions.Configuration.EnvironmentVariables`'s
 ## Install
 
 ```sh
-npm install @fnioc/config @fnioc/config-env
+npm install @fnconfig/config @fnconfig/env
 ```
 
-`@fnioc/config` is a peer dependency — install it alongside this package.
+`@fnconfig/config` is a peer dependency — install it alongside this package.
 
 ## Basic usage
 
 ```ts
-import "@fnioc/config-env"; // unlocks .addEnvironmentVariables() on ConfigurationBuilder
-import { ConfigurationBuilder } from "@fnioc/config";
+import "@fnconfig/env"; // unlocks .addEnvironmentVariables() on ConfigurationBuilder
+import { ConfigurationBuilder } from "@fnconfig/config";
 
 const config = new ConfigurationBuilder()
   .addEnvironmentVariables({ prefix: "APP_" })
@@ -38,11 +38,11 @@ a `prefix: "APP_"` source.
 this package bolts it on via TypeScript declaration merging + a runtime
 prototype patch, the same shape as a C# extension method. If your code calls
 `.addEnvironmentVariables()` but never names any other symbol from
-`@fnioc/config-env`, a bundler or tree-shaker has nothing forcing it to load
+`@fnconfig/env`, a bundler or tree-shaker has nothing forcing it to load
 this package's module — you must import it for its side effect explicitly:
 
 ```ts
-import "@fnioc/config-env"; // unlocks .addEnvironmentVariables() on ConfigurationBuilder
+import "@fnconfig/env"; // unlocks .addEnvironmentVariables() on ConfigurationBuilder
 ```
 
 This mirrors C#'s `using Microsoft.Extensions.Configuration.EnvironmentVariables;`

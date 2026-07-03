@@ -1,20 +1,20 @@
-// Public entry point for @fnioc/config-env.
+// Public entry point for @fnconfig/env.
 //
 // Bolts `addEnvironmentVariables` sugar onto the shared `ConfigurationBuilder`
-// from @fnioc/config via TS declaration merging + a runtime prototype
+// from @fnconfig/config via TS declaration merging + a runtime prototype
 // assignment, mimicking a C# extension method (see
 // Microsoft.Extensions.Configuration.EnvironmentVariables' own
 // `EnvironmentVariablesExtensions.AddEnvironmentVariables`). A consumer who
 // never names a runtime symbol from this package (only wants the sugar) needs
-// a bare side-effect import: `import "@fnioc/config-env";`.
+// a bare side-effect import: `import "@fnconfig/env";`.
 
-import { ConfigurationBuilder } from "@fnioc/config";
+import { ConfigurationBuilder } from "@fnconfig/config";
 import {
   type EnvironmentVariablesConfigurationSourceOptions,
   EnvironmentVariablesConfigurationSource,
 } from "./environment-variables-configuration-source";
 
-declare module "@fnioc/config/configuration-builder" {
+declare module "@fnconfig/config/configuration-builder" {
   interface ConfigurationBuilder {
     /**
      * Registers an {@link EnvironmentVariablesConfigurationSource} seeded from

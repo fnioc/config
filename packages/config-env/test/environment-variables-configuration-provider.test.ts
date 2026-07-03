@@ -9,7 +9,7 @@
 // since load() is no longer implicit construction-time flattening.
 
 import { afterEach, describe, expect, test } from "bun:test";
-import { ConfigurationBuilder } from "@fnioc/config";
+import { ConfigurationBuilder } from "@fnconfig/config";
 import "../src/index";
 import { EnvironmentVariablesConfigurationSource } from "../src/environment-variables-configuration-source";
 import { EnvironmentVariablesConfigurationProvider } from "../src/environment-variables-configuration-provider";
