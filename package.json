@@ -1,35 +1,26 @@
 {
-  "name": "@fnioc/config",
+  "name": "config-monorepo",
+  "private": true,
   "version": "0.0.0",
-  "description": "Constructor-injectable, layered configuration binding for @fnioc/di -- JSON/env/CLI sources, compile-time-checked binding via SchemaFor<T>, zero required build step.",
+  "description": "Layered, provider-based configuration for TypeScript (monorepo root; individual packages publish to npm under @fnconfig)",
+  "license": "MIT",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist"
+  "workspaces": [
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "bun test",
-    "lint": "tsc -p tsconfig.lint.json"
-  },
-  "dependencies": {
-    "@fnioc/di": "^1.0.0"
+    "lint": "moon run :lint",
+    "test": "moon run :test",
+    "build": "moon run :build"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.14",
-    "@types/node": "^24.13.2",
-    "typescript": "^6.0.3"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "@types/bun": "^1.3.0",
+    "dprint": "^0.54.0",
+    "eslint": "^10.4.1",
+    "rollup": "^4.61.0",
+    "rollup-plugin-dts": "^6.4.1",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.60.1"
   }
 }

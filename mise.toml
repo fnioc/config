@@ -10,6 +10,12 @@ enter = "git config core.hooksPath .githooks"
 [tools]
 node = "24"
 bun = "latest"
+# moon's task runner — drives build/test/lint across the workspace.
+"aqua:moonrepo/moon" = "latest"
+dprint = "0.54.0"
+# Needed later for packing -- bun pm pack doesn't respect package.json
+# publishConfig overrides, pnpm pack does.
+pnpm = "10"
 
 # Common tasks. Optional — wire up your own as your project needs.
 # [tasks.build]

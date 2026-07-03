@@ -1,0 +1,20 @@
+{
+  "name": "@fnconfig/integration",
+  "private": true,
+  "version": "0.0.0",
+  "description": "End-to-end integration tests against the BUILT DIST of @fnconfig/config + the three provider packages. Proves the ConfigurationBuilder add* augmentation survives bundling -- the one place a sideEffects/tree-shaking or rollup-plugin-dts regression would surface. Not published.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "moon run integration:test",
+    "lint": "moon run integration:lint"
+  },
+  "devDependencies": {
+    "@fnconfig/config": "workspace:*",
+    "@fnconfig/core": "workspace:*",
+    "@fnconfig/commandline": "workspace:*",
+    "@fnconfig/env": "workspace:*",
+    "@fnconfig/json": "workspace:*",
+    "@types/node": "^24.13.2"
+  }
+}

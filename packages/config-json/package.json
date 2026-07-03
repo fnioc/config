@@ -1,0 +1,60 @@
+{
+  "name": "@fnconfig/json",
+  "version": "0.0.0",
+  "description": "JSON file configuration provider for @fnconfig/config: JsonConfigurationSource/Provider + the addJsonFile augmentation.",
+  "keywords": [
+    "configuration",
+    "config",
+    "json",
+    "ioc",
+    "typescript"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fnioc/config.git",
+    "directory": "packages/config-json"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "bun": "./src/index.ts",
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "moon run config-json:build",
+    "test": "moon run config-json:test",
+    "lint": "moon run config-json:lint"
+  },
+  "dependencies": {
+    "@fnconfig/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@fnconfig/config": "workspace:^"
+  },
+  "devDependencies": {
+    "@fnconfig/config": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      }
+    }
+  }
+}

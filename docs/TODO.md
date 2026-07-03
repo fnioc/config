@@ -1,7 +1,7 @@
 # TODO
 
 Running list of unfinished work and reviewed-but-not-yet-acted-on decisions
-for `@fnioc/config`, as of 2026-07-01. Ground truth is always the GitHub
+for `@fnconfig/config`, as of 2026-07-01. Ground truth is always the GitHub
 issues/PRs linked below — this is a snapshot, not the source of truth.
 
 ## Blocking — needs maintainer action
@@ -22,25 +22,18 @@ issues/PRs linked below — this is a snapshot, not the source of truth.
   and must be run by the maintainer. Nothing has been promoted; this
   stays untouched by design.
 
-## Feature work — blocked on maintainer decisions
+## Feature work — parked
 
 **Issue [#7](https://github.com/fnioc/config/issues/7) —
-transformer-based `addConfig<T>()` sugar package.** Design doc is
-written; implementation is paused pending answers to:
-
-1. Which `@fnioc/di` API to target — the published
-   `DiBuilder`/`.register()` API (what the shipped
-   `examples/without-transformer` actually uses) vs.
-   `ServiceManifest`/`addFactory().as()` (what the original design
-   sketch and the `@fnioc/transformer@5` reference implementation use).
-   These are incompatible surfaces.
-2. Whether a compatible `@fnioc/transformer` version exists for
-   whichever API is chosen.
-3. Monorepo vs. separate repo for the transformer package (mirrors
-   `@fnioc/di` + `@fnioc/transformer`'s split).
-4. Naming collision: `addConfig` matches `@fnioc/transformer`'s own
-   scope-method-detection regex — needs a rename on one side or a
-   transformer-side fix.
+`addConfig<T>()` binding sugar.** Superseded by the standalone
+direction on the `@fnconfig` scope. The original design coupled the
+sugar to an external dependency-injection framework and a compile-time
+transformer — both of which this library no longer depends on — so the
+questions that blocked it (which DI surface to target, transformer
+compatibility, mono- vs. multi-repo packaging, and an `addConfig`
+naming collision with the transformer's method-detection) are all moot.
+Parked pending a fresh design that fits the no-framework,
+no-transformer model.
 
 ## Deferred, no blocker, not started
 
@@ -56,7 +49,7 @@ Baked into the shipped MVP (PRs #4/#5/#6). Revisit only if a real need
 surfaces:
 
 - **Last-source-wins flat merge** (not deep merge) across JSON/env/CLI
-  sources, mirroring .NET's `IConfiguration` model.
+  sources.
 - **Case-insensitive resolution everywhere** — keys, sections,
   `opts.section` — meaning two differently-cased keys can never coexist
   as distinct entries.
@@ -69,5 +62,5 @@ surfaces:
   incident — the merge stayed, review findings shipped as follow-up PRs
   #5/#6 rather than reverting and redoing.
 - **Draft PR #2 closed as superseded** rather than reconciled, since
-  `examples/without-transformer` shipped for real in PR #4 and collided
-  with the sketch.
+  the standalone example shipped for real in PR #4 and collided with
+  the sketch.
