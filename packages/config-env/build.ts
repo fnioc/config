@@ -3,8 +3,8 @@
 // @fnconfig/config is a peer dependency and MUST stay external in both outputs --
 // this package patches ConfigurationBuilder.prototype from @fnconfig/config, so a
 // consumer's copy of @fnconfig/config must be the same instance the augmentation
-// runs against. Bundling a private copy in (the pattern @fnioc/di uses for its
-// inlined private @fnioc/core) would silently break addEnvironmentVariables.
+// runs against. Bundling a private copy of @fnconfig/config in would silently
+// break addEnvironmentVariables.
 //
 //   1. dist/index.js   — `bun build` bundles the ESM entry, @fnconfig/config external.
 //   2. dist/index.d.ts — rollup-plugin-dts rolls the public type surface into

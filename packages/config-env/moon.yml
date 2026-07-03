@@ -8,7 +8,7 @@ language: 'typescript'
 # build time (both the bun bundle and the rolled-up .d.ts) -- it patches
 # ConfigurationBuilder.prototype from @fnconfig/config, so a consumer's copy of
 # @fnconfig/config must be the SAME instance the augmentation runs against.
-# Inlining core here (the pattern @fnioc/di uses for its private @fnioc/core)
+# Bundling a private copy of @fnconfig/config in here
 # would create a second, private ConfigurationBuilder whose prototype the
 # consumer never touches -- the addEnvironmentVariables sugar would silently
 # not exist.

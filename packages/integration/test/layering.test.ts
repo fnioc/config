@@ -1,6 +1,6 @@
 // Layered-source integration, run against the BUILT DIST of every package (see
 // moon.yml: these run under `node`, whose import/default export condition
-// resolves each `@fnioc/*` bare import to its `dist/index.js` -- the artefact a
+// resolves each `@fnconfig/*` bare import to its `dist/index.js` -- the artefact a
 // real consumer gets -- whereas `bun`'s implicit "bun" condition would resolve
 // to `src`). This exercises the full provider-augmentation surface together:
 // addJsonFile / addEnvironmentVariables / addCommandLine, each bolted onto the

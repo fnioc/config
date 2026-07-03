@@ -1,5 +1,5 @@
 // Public-surface smoke test for the pieces that only exist ACROSS the package
-// split -- run against the BUILT DIST (node resolves each @fnioc/* import to
+// split -- run against the BUILT DIST (node resolves each @fnconfig/* import to
 // dist/index.js; see moon.yml). packages/config's own index.test.ts already
 // covers the core barrel (ConfigurationBuilder/Root/Section/Provider,
 // bindConfig, the Memory provider, the abstractions, and addInMemoryCollection)
