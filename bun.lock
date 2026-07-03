@@ -1,9 +1,9 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
+  "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@fnioc/config",
+      "name": "config-monorepo",
       "devDependencies": {
         "@types/bun": "^1.3.0",
         "dprint": "^0.54.0",
@@ -14,8 +14,8 @@
         "typescript-eslint": "^8.60.1",
       },
     },
-    "examples/without-transformer": {
-      "name": "@fnioc-examples/without-transformer",
+    "examples/basic": {
+      "name": "@fnconfig-examples/basic",
       "version": "0.0.0",
       "dependencies": {
         "@fnconfig/commandline": "workspace:*",
@@ -23,7 +23,6 @@
         "@fnconfig/core": "workspace:*",
         "@fnconfig/env": "workspace:*",
         "@fnconfig/json": "workspace:*",
-        "@fnioc/di": "^1.0.0",
       },
       "devDependencies": {
         "@types/node": "^24.13.2",
@@ -135,6 +134,8 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.2", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="],
 
+    "@fnconfig-examples/basic": ["@fnconfig-examples/basic@workspace:examples/basic"],
+
     "@fnconfig/commandline": ["@fnconfig/commandline@workspace:packages/config-commandline"],
 
     "@fnconfig/config": ["@fnconfig/config@workspace:packages/config"],
@@ -144,8 +145,6 @@
     "@fnconfig/env": ["@fnconfig/env@workspace:packages/config-env"],
 
     "@fnconfig/json": ["@fnconfig/json@workspace:packages/config-json"],
-
-    "@fnioc-examples/without-transformer": ["@fnioc-examples/without-transformer@workspace:examples/without-transformer"],
 
     "@fnioc/core": ["@fnioc/core@1.0.0", "", {}, "sha512-d1dQeOkbiJiMy+KOFjqjHUXhT2JUTmzs1RA/JN9TYcfDB/d1cliBeNCn3vIPAKBd7zW56djZPWGU5NbrGt7F9g=="],
 
@@ -357,7 +356,7 @@
 
     "picocolors": ["picocolors@1.1.1", "", {}, "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="],
 
-    "picomatch": ["picomatch@4.0.4", "", {}, "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A=="],
+    "picomatch": ["picomatch@4.0.5", "", {}, "sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A=="],
 
     "prelude-ls": ["prelude-ls@1.2.1", "", {}, "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g=="],
 

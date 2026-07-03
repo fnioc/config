@@ -1,18 +1,18 @@
 # https://moonrepo.dev/docs/config/project
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
-id: 'examples-without-transformer'
+id: 'examples-basic'
 layer: 'application'
 language: 'typescript'
 
-# A real external consumer: imports @fnconfig/config + the three providers as bare
-# specifiers, each resolved at runtime by `node` through its symlink to the
-# package's BUILT DIST (import/default export condition). Plain `tsc` compiles
-# this example's own src into dist -- no bundler, no transformer. The add*
-# sugar (addJsonFile/addEnvironmentVariables/addCommandLine) is contributed by
-# the providers' bare side-effect imports in src/main.ts, so this example only
-# runs correctly if those augmentations survive bundling -- hence the four
-# package builds as test deps.
+# A standalone external consumer: imports @fnconfig/config + the three
+# providers as bare specifiers, each resolved at runtime by `node` through its
+# symlink to the package's BUILT DIST (import/default export condition). Plain
+# `tsc` compiles this example's own src into dist -- no bundler, no
+# transformer. The add* sugar (addJsonFile/addEnvironmentVariables/
+# addCommandLine) is contributed by the providers' bare side-effect imports in
+# src/main.ts, so this example only runs correctly if those augmentations
+# survive bundling -- hence the four package builds as test deps.
 dependsOn:
   - 'config'
   - 'config-json'
@@ -33,7 +33,7 @@ tasks:
     # Run the compiled example against the built dist of all four packages,
     # with the same fixed env var + CLI arg `bun run start` uses, and diff
     # against the golden snapshot.
-    script: 'APP_Server__Host=0.0.0.0 node dist/main.js --Server:Port 8080 > /tmp/fnioc-config-without-transformer.out && diff -u expected.txt /tmp/fnioc-config-without-transformer.out'
+    script: 'APP_Server__Host=10.0.0.5 node dist/main.js --Server:Port 8080 > /tmp/fnconfig-examples-basic.out && diff -u expected.txt /tmp/fnconfig-examples-basic.out'
     deps:
       - 'build'
       - 'config:build'

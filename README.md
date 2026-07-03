@@ -27,7 +27,7 @@ npm install @fnioc/config @fnioc/di
 
 ## Quickstart
 
-This mirrors the runnable example in [`examples/without-transformer`](examples/without-transformer) — see that directory for the full, working project (including two section-scoped bindings of the same shape and `@fnioc/di` wiring end to end).
+This mirrors the runnable example in [`examples/basic`](examples/basic) — see that directory for the full, working project (including two section-scoped bindings of the same shape).
 
 Given `appsettings.json`:
 

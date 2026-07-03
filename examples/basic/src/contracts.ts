@@ -1,7 +1,5 @@
-// Plain TypeScript interfaces -- nothing @fnioc-specific lives here. What's
-// interesting is how they get bound (SchemaFor<T>-checked, by hand, in
-// main.ts) and wired (explicit tokens + forCtor(...).signature(...), also in
-// main.ts) without any transformer or decorator support.
+// Plain TypeScript interfaces -- what's interesting is how they get bound
+// (SchemaFor<T>-checked, by hand, in main.ts), not how they're declared here.
 
 export interface ServerConfig {
   readonly host: string;

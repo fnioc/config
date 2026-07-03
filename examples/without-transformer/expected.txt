@@ -1,6 +1,0 @@
-=== @fnconfig/config -- without transformer ===
-listening on 0.0.0.0:8080 (tls)
-primary=db-primary.internal/app (pool 10), replica=db-replica.internal/app (pool 5)
-ApiServer instances built: 1
-DatabasePool instances built: 1
-primary and replica are distinct instances: true
