@@ -7,9 +7,9 @@
 // full stop) rather than also representing "present but null" or "present but
 // empty" as distinct states.
 
+import { ConfigurationProvider } from "@fnconfig/config";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { ConfigurationProvider } from "@fnconfig/config";
 import type { JsonConfigurationSource } from "./json-configuration-source";
 
 export class JsonConfigurationProvider extends ConfigurationProvider {

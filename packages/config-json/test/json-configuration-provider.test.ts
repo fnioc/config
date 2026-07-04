@@ -6,11 +6,11 @@
 // exercised here through the ConfigurationBuilder -> JsonConfigurationSource
 // -> ConfigurationRoot path.
 
+import { ConfigurationBuilder } from "@fnconfig/config";
+import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, test } from "bun:test";
-import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "../src/json-configuration-source";
 // Side-effect import: installs `addJsonFile` onto ConfigurationBuilder.
 import "../src/index";
