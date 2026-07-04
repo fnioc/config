@@ -98,6 +98,22 @@ describe("JsonConfigurationProvider", () => {
     ).toThrow();
   });
 
+  test("throws when the JSON root is a scalar", () => {
+    expect(() =>
+      new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(`${FIXTURES}/scalar-root.json`))
+        .build()
+    ).toThrow(/root must be an object or array/);
+  });
+
+  test("throws when the JSON root is null", () => {
+    expect(() =>
+      new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(`${FIXTURES}/null-root.json`))
+        .build()
+    ).toThrow(/root must be an object or array/);
+  });
+
   test("addJsonFile augmentation registers a JsonConfigurationSource on the builder", () => {
     const root = new ConfigurationBuilder()
       .addJsonFile(`${FIXTURES}/nested.json`)

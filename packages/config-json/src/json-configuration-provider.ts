@@ -39,6 +39,12 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
     const raw = readFileSync(resolvedPath, "utf-8");
     const parsed: unknown = JSON.parse(raw);
 
+    if (parsed === null || typeof parsed !== "object") {
+      throw new Error(
+        `JsonConfigurationProvider: invalid JSON in ${resolvedPath} -- root must be an object or array`,
+      );
+    }
+
     this.flatten(parsed, "");
   }
 
