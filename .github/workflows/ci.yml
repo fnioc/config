@@ -62,7 +62,6 @@ jobs:
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
-      - run: npm ci
       - name: Determine + tag the lockstep version
         run: npx semantic-release
         env:
