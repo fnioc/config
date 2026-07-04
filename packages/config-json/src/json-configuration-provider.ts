@@ -8,7 +8,7 @@
 // empty" as distinct states.
 
 import { ConfigurationProvider } from "@fnconfig/config";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { JsonConfigurationSource } from "./json-configuration-source";
 
@@ -27,16 +27,24 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
 
     const resolvedPath = resolve(process.cwd(), this.source.path);
 
-    if (!existsSync(resolvedPath)) {
-      if (this.source.optional) {
-        return;
+    // Read unconditionally and react to ENOENT, rather than existsSync()
+    // then readFileSync(): the check-then-act pair is a TOCTOU race -- the
+    // file can be removed in the window between the two calls.
+    let raw: string;
+    try {
+      raw = readFileSync(resolvedPath, "utf-8");
+    } catch (error) {
+      if (isErrorWithCode(error, "ENOENT")) {
+        if (this.source.optional) {
+          return;
+        }
+        throw new Error(
+          `JsonConfigurationProvider: config file not found: ${resolvedPath}`,
+        );
       }
-      throw new Error(
-        `JsonConfigurationProvider: config file not found: ${resolvedPath}`,
-      );
+      throw error;
     }
 
-    const raw = readFileSync(resolvedPath, "utf-8");
     const parsed: unknown = JSON.parse(raw);
 
     if (parsed === null || typeof parsed !== "object") {
@@ -73,4 +81,9 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
       this.set(prefix, String(value));
     }
   }
+}
+
+/** True when `error` is a Node filesystem error tagged with `code`. */
+function isErrorWithCode(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
 }
