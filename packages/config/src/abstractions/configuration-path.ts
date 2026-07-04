@@ -1,6 +1,11 @@
 
 function isIterable(value: any): value is Iterable<any> {
-    return !!value[Symbol.iterator];
+    // A string is itself iterable (over its characters), so it must be
+    // excluded here -- otherwise a single variadic string argument to
+    // `combine` (e.g. `combine("Host")`) is mistaken for the
+    // Iterable<string> overload and exploded into per-character segments
+    // (or, for a single-character string, recurses forever).
+    return value != null && typeof value !== "string" && !!value[Symbol.iterator];
 }
 
 /// <summary>
@@ -11,16 +16,6 @@ function isIterable(value: any): value is Iterable<any> {
 /// The delimiter ":" used to separate individual keys in a path.
 /// </summary>
 export const KeyDelimiter = ":";
-
-/// <summary>
-/// Combines path segments into one path.
-/// </summary>
-/// <param name="pathSegments">The path segments to combine.</param>
-/// <returns>The combined path.</returns>
-// export function Combine(...pathSegments:string[])
-// {
-//     return pathSegments.join(this.KeyDelimiter);
-// }
 
 /// <summary>
 /// Combines path segments into one path.
