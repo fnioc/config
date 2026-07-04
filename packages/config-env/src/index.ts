@@ -16,8 +16,8 @@ declare module "@fnconfig/config/configuration-builder" {
   interface ConfigurationBuilder {
     /**
      * Registers an {@link EnvironmentVariablesConfigurationSource} seeded from
-     * `process.env`, per an optional `options.prefix` and
-     * `options.variableNameTransformation`.
+     * `process.env` by default, per an optional `options.prefix`,
+     * `options.variableNameTransformation`, and `options.env` override.
      */
     addEnvironmentVariables(options?: EnvironmentVariablesConfigurationSourceOptions): this;
   }

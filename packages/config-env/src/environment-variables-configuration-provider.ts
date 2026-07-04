@@ -1,5 +1,11 @@
-// EnvironmentVariablesConfigurationProvider -- loads `process.env` into the
+// EnvironmentVariablesConfigurationProvider -- loads `source.env` (the
+// source's configured env map, defaulting to `process.env`) into the
 // case-insensitive ConfigurationProvider store.
+//
+// load() reads only from `this.#source` -- it never touches `process.env`
+// directly -- so it's a pure function of the source, and a caller can inject
+// an isolated map through `source.env` instead of mutating the real process
+// environment (see EnvironmentVariablesConfigurationSource).
 //
 // Transform-before-filter order: each raw variable name is run through
 // `source.variableNameTransformation` FIRST (default `__` -> `:`), and only
@@ -24,10 +30,10 @@ export class EnvironmentVariablesConfigurationProvider extends ConfigurationProv
   public override load(): void {
     this.data.clear();
 
-    const { prefix, variableNameTransformation } = this.#source;
+    const { prefix, variableNameTransformation, env } = this.#source;
     const foldedPrefix = prefix?.toLowerCase();
 
-    for (const [rawName, value] of Object.entries(process.env)) {
+    for (const [rawName, value] of Object.entries(env)) {
       if (value === undefined) {
         continue;
       }

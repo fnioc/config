@@ -18,7 +18,7 @@
 
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { afterEach, describe, test } from "node:test";
+import { describe, test } from "node:test";
 
 import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
 // Bare side-effect imports: install addJsonFile / addEnvironmentVariables /
@@ -30,20 +30,6 @@ import "@fnconfig/env";
 import "@fnconfig/commandline";
 
 const FIXTURES = join(import.meta.dirname, "fixtures", "config-builder");
-
-const managedKeys = new Set<string>();
-
-function setEnv(name: string, value: string): void {
-  process.env[name] = value;
-  managedKeys.add(name);
-}
-
-afterEach(() => {
-  for (const key of managedKeys) {
-    delete process.env[key];
-  }
-  managedKeys.clear();
-});
 
 describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (built dist)", () => {
   test("a later JSON file overlay overrides specific keys while leaving others untouched", () => {
@@ -60,12 +46,13 @@ describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (buil
   });
 
   test("environment variables override JSON", () => {
-    setEnv("FNIOC_TEST_BUILDER_Server__Port", "7070");
-
     const config = new ConfigurationBuilder()
       .addJsonFile(`${FIXTURES}/base.json`)
       .addJsonFile(`${FIXTURES}/overlay.json`)
-      .addEnvironmentVariables({ prefix: "FNIOC_TEST_BUILDER_" })
+      .addEnvironmentVariables({
+        prefix: "FNIOC_TEST_BUILDER_",
+        env: { FNIOC_TEST_BUILDER_Server__Port: "7070" },
+      })
       .build();
 
     assert.equal(config.get("Server:Port"), "7070");
@@ -80,12 +67,13 @@ describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (buil
     // with it. The env source's transformed key is `SERVER:PORT`; the
     // provider store folds case, so a `Server:Port` lookup checked against the
     // last-registered (env) provider first must return the env value.
-    setEnv("FNIOC_TEST_BUILDER_SERVER__PORT", "7070");
-
     const config = new ConfigurationBuilder()
       .addJsonFile(`${FIXTURES}/base.json`)
       .addJsonFile(`${FIXTURES}/overlay.json`)
-      .addEnvironmentVariables({ prefix: "FNIOC_TEST_BUILDER_" })
+      .addEnvironmentVariables({
+        prefix: "FNIOC_TEST_BUILDER_",
+        env: { FNIOC_TEST_BUILDER_SERVER__PORT: "7070" },
+      })
       .build();
 
     // The env value wins over the (differently-cased) merged JSON value,
@@ -105,11 +93,12 @@ describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (buil
     // are conventionally UPPERCASE while JSON keys retain their natural casing.
     // The case-folding provider store must make the later (env) source win over
     // the earlier (JSON) one instead of both coexisting behind two casings.
-    setEnv("FNIOC_TEST_BUILDER_SERVER__PORT", "9999");
-
     const config = new ConfigurationBuilder()
       .addJsonFile(`${FIXTURES}/server-port-only.json`)
-      .addEnvironmentVariables({ prefix: "FNIOC_TEST_BUILDER_" })
+      .addEnvironmentVariables({
+        prefix: "FNIOC_TEST_BUILDER_",
+        env: { FNIOC_TEST_BUILDER_SERVER__PORT: "9999" },
+      })
       .build();
 
     assert.equal(config.get("Server:Port"), "9999");
@@ -120,12 +109,13 @@ describe("layering: addJsonFile / addEnvironmentVariables / addCommandLine (buil
   });
 
   test("command line overrides both JSON and environment variables", () => {
-    setEnv("FNIOC_TEST_BUILDER_Server__Port", "7070");
-
     const config = new ConfigurationBuilder()
       .addJsonFile(`${FIXTURES}/base.json`)
       .addJsonFile(`${FIXTURES}/overlay.json`)
-      .addEnvironmentVariables({ prefix: "FNIOC_TEST_BUILDER_" })
+      .addEnvironmentVariables({
+        prefix: "FNIOC_TEST_BUILDER_",
+        env: { FNIOC_TEST_BUILDER_Server__Port: "7070" },
+      })
       .addCommandLine(["--Server:Port", "6060"])
       .build();
 
