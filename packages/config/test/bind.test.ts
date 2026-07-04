@@ -11,7 +11,7 @@
 // `new ConfigurationRoot(new Map(...))`.
 
 import { describe, expect, test } from "bun:test";
-import { bindConfig, ConfigBindError } from "@fnconfig/config";
+import { bindConfig, ConfigBindError, optional } from "@fnconfig/config";
 import type { SchemaFor } from "@fnconfig/config";
 import { rootOf } from "./support";
 
@@ -29,7 +29,7 @@ const serverSchema: SchemaFor<ServerConfig> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   nested: {
     value: "string",
   },
@@ -180,6 +180,48 @@ describe("bindConfig", () => {
 
     const result = bindConfig<ServerConfig>(root, serverSchema);
     expect(result.timeout).toBe(30);
+  });
+
+  test("a real nested property literally named `optional` is not mistaken for the optional-field wrapper", () => {
+    // Regression: the optional-field wrapper used to be detected by the key
+    // NAME "optional", so a genuine object property called `optional` bound
+    // as if the whole object were an absent optional field -- yielding
+    // `{ feature: undefined }` instead of `{ feature: { optional: <value> } }`.
+    interface Feature {
+      optional: string;
+    }
+    interface AppConfig {
+      feature: Feature;
+    }
+
+    const schema: SchemaFor<AppConfig> = { feature: { optional: "string" } };
+
+    const root = rootOf({
+      "Feature:Optional": "present",
+    });
+
+    const result = bindConfig<AppConfig>(root, schema);
+    expect(result).toEqual({ feature: { optional: "present" } });
+  });
+
+  test("a genuinely optional field and a real property named `optional` coexist", () => {
+    // The `optional(...)` wrapper (symbol-keyed) marks `timeout` as optional,
+    // while `optional` is an ordinary required string field. The two are
+    // distinguished out-of-band, so both bind to their own values.
+    interface Mixed {
+      optional: string;
+      timeout?: number;
+    }
+
+    const schema: SchemaFor<Mixed> = {
+      optional: "string",
+      timeout: optional("number"),
+    };
+
+    const root = rootOf({ "Optional": "literal" });
+
+    const result = bindConfig<Mixed>(root, schema);
+    expect(result).toEqual({ optional: "literal", timeout: undefined });
   });
 
   test("key matching is case-insensitive against schema property names", () => {

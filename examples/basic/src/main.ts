@@ -13,7 +13,7 @@
 // Port from the CLI override, and Ssl from the Development overlay --
 // proving every layer actually takes effect, in precedence order.
 
-import { bindConfig, ConfigurationBuilder } from "@fnconfig/config";
+import { bindConfig, ConfigurationBuilder, optional } from "@fnconfig/config";
 import type { SchemaFor } from "@fnconfig/config";
 // Bare side-effect imports install addJsonFile / addEnvironmentVariables /
 // addCommandLine onto ConfigurationBuilder from each provider package. No
@@ -42,7 +42,7 @@ const config = new ConfigurationBuilder()
 const SERVER_CONFIG_SCHEMA: SchemaFor<ServerConfig> = {
   host: "string",
   port: "number",
-  ssl: { optional: "boolean" },
+  ssl: optional("boolean"),
 };
 
 const DATABASE_CONFIG_SCHEMA: SchemaFor<DatabaseConfig> = {

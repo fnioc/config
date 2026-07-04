@@ -35,4 +35,8 @@ export { bindConfig, ConfigBindError } from "./bind";
 export type { BindOptions } from "./bind";
 
 // Type-level schema description: derive a schema from `T`, or `T` from a schema.
+// `optional(...)` (and its underlying `optionalMarker` symbol) wraps a field's
+// schema to mark it optional -- an out-of-band discriminator that never
+// collides with a real property named `optional`.
+export { optional, optionalMarker } from "./schema";
 export type { Infer, Schema, SchemaFor } from "./schema";

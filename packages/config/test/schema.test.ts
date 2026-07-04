@@ -15,6 +15,7 @@
 // and `tsc` fails the build with "Unused '@ts-expect-error' directive".
 
 import { describe, expect, test } from "bun:test";
+import { optional, optionalMarker } from "@fnconfig/config";
 import type { SchemaFor } from "@fnconfig/config";
 
 interface Nested {
@@ -34,7 +35,7 @@ const validSchema: SchemaFor<Target> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   nested: { value: "string" },
 };
 
@@ -43,7 +44,7 @@ const validSchema: SchemaFor<Target> = {
 const missingField: SchemaFor<Target> = {
   host: "string",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   nested: { value: "string" },
 };
 
@@ -52,7 +53,7 @@ const extraField: SchemaFor<Target> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   nested: { value: "string" },
   // @ts-expect-error -- "extra" is not a property of Target
   extra: "string",
@@ -64,16 +65,16 @@ const wrongKind: SchemaFor<Target> = {
   // @ts-expect-error -- "port" is a number, not a string
   port: "string",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   nested: { value: "string" },
 };
 
-// An optional field that isn't wrapped in `{ optional: ... }` is a compile error.
+// An optional field that isn't wrapped with `optional(...)` is a compile error.
 const unwrappedOptional: SchemaFor<Target> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  // @ts-expect-error -- "timeout" must be `{ optional: "number" }`, not a bare "number"
+  // @ts-expect-error -- "timeout" must be optional("number"), not a bare "number"
   timeout: "number",
   nested: { value: "string" },
 };
@@ -83,7 +84,7 @@ const nestedMissingField: SchemaFor<Target> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   // @ts-expect-error -- nested.value is missing
   nested: {},
 };
@@ -93,22 +94,53 @@ const nestedWrongKind: SchemaFor<Target> = {
   host: "string",
   port: "number",
   enabled: "boolean",
-  timeout: { optional: "number" },
+  timeout: optional("number"),
   // @ts-expect-error -- nested.value is a string, not a number
   nested: { value: "number" },
 };
 
+// A real interface property literally NAMED `optional` maps to a plain string
+// KEY (`{ optional: "string" }`), never the optional-field wrapper -- the
+// out-of-band symbol discriminator makes the two impossible to confuse.
+interface RealOptionalProperty {
+  optional: string;
+}
+const realOptionalProperty: SchemaFor<RealOptionalProperty> = { optional: "string" };
+
+// ...and conversely, the symbol-keyed wrapper is NOT accepted where a real,
+// required `optional` string property is expected.
+const realOptionalPropertyRejectsWrapper: SchemaFor<RealOptionalProperty> = {
+  // @ts-expect-error -- `optional` is a required string, not an optional field
+  optional: optional("string"),
+};
+
 describe("SchemaFor<T>", () => {
-  test("a schema literal that matches T field-for-field binds to the expected shape", () => {
-    expect(validSchema).toEqual({
-      host: "string",
-      port: "number",
-      enabled: "boolean",
-      timeout: { optional: "number" },
-      nested: { value: "string" },
-    });
-    expect([missingField, extraField, wrongKind, unwrappedOptional, nestedMissingField, nestedWrongKind].length).toBe(
-      6,
-    );
+  test("a schema literal that matches T field-for-field has the expected runtime shape", () => {
+    expect(validSchema.host).toBe("string");
+    expect(validSchema.port).toBe("number");
+    expect(validSchema.enabled).toBe("boolean");
+    expect(validSchema.nested).toEqual({ value: "string" });
+
+    // The optional field is boxed under the symbol marker -- NOT a string key,
+    // so it can never be confused with a property literally named `optional`.
+    expect(optionalMarker in validSchema.timeout).toBe(true);
+    expect(validSchema.timeout[optionalMarker]).toBe("number");
+    expect("optional" in validSchema.timeout).toBe(false);
+
+    // A real `optional` property is a plain string key, distinct from the wrapper.
+    expect(realOptionalProperty.optional).toBe("string");
+    expect(optionalMarker in realOptionalProperty).toBe(false);
+
+    expect(
+      [
+        missingField,
+        extraField,
+        wrongKind,
+        unwrappedOptional,
+        nestedMissingField,
+        nestedWrongKind,
+        realOptionalPropertyRejectsWrapper,
+      ].length,
+    ).toBe(7);
   });
 });

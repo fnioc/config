@@ -13,7 +13,8 @@
 // needed -- it just walks IConfiguration, which folds case internally.
 
 import type { IConfiguration, IConfigurationSection } from "@fnconfig/core";
-import type { Schema, SchemaFor } from "./schema";
+import { optionalMarker } from "./schema";
+import type { ObjectSchema, OptionalSchema, RequiredSchema, Schema, SchemaFor } from "./schema";
 
 /** Options accepted by {@link bindConfig}. */
 export interface BindOptions {
@@ -50,8 +51,8 @@ function isLeafSchema(schema: Schema): schema is "string" | "number" | "boolean"
   return schema === "string" || schema === "number" || schema === "boolean";
 }
 
-function isOptionalSchema(schema: Schema): schema is { optional: Schema } {
-  return typeof schema === "object" && schema !== null && "optional" in schema;
+function isOptionalSchema(schema: Schema): schema is OptionalSchema {
+  return typeof schema === "object" && schema !== null && optionalMarker in schema;
 }
 
 /**
@@ -71,7 +72,7 @@ function sectionExists(section: IConfigurationSection): boolean {
 }
 
 /** Whether `propName` (matched against `schema`'s shape) has any data at this scope. */
-function isPresent(config: IConfiguration, schema: Schema, propName: string): boolean {
+function isPresent(config: IConfiguration, schema: RequiredSchema, propName: string): boolean {
   if (isLeafSchema(schema)) {
     return config.get(propName) !== undefined;
   }
@@ -125,7 +126,7 @@ function coerceLeaf(
 /** Binds a required (already-unwrapped-of-optional) field, recording issues as needed. */
 function bindRequiredField(
   config: IConfiguration,
-  schema: Schema,
+  schema: RequiredSchema,
   propName: string,
   path: readonly string[],
   issues: string[],
@@ -141,12 +142,13 @@ function bindRequiredField(
     return coerceLeaf(schema, raw, fullPath, issues);
   }
 
+  // Not a leaf, so `schema` narrows to the nested-object case -- no cast.
   const section = config.getSection(propName);
   if (!sectionExists(section)) {
     issues.push(`missing required key "${fullPath}"`);
     return {};
   }
-  return bindObject(section, schema as Record<string, Schema>, [...path, propName], issues);
+  return bindObject(section, schema, [...path, propName], issues);
 }
 
 function bindField(
@@ -157,24 +159,25 @@ function bindField(
   issues: string[],
 ): unknown {
   if (isOptionalSchema(schema)) {
-    const inner = schema.optional;
+    const inner = schema[optionalMarker];
     if (!isPresent(config, inner, propName)) {
       return undefined;
     }
     return bindRequiredField(config, inner, propName, path, issues);
   }
+  // Not the optional wrapper, so `schema` narrows to RequiredSchema -- no cast.
   return bindRequiredField(config, schema, propName, path, issues);
 }
 
 function bindObject(
   config: IConfiguration,
-  schema: Record<string, Schema>,
+  schema: ObjectSchema,
   path: readonly string[],
   issues: string[],
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
-  for (const propName of Object.keys(schema)) {
-    result[propName] = bindField(config, schema[propName] as Schema, propName, path, issues);
+  for (const [propName, sub] of Object.entries(schema)) {
+    result[propName] = bindField(config, sub, propName, path, issues);
   }
   return result;
 }
@@ -182,16 +185,22 @@ function bindObject(
 /**
  * Binds an `IConfiguration` (optionally narrowed to `opts.section` first) into
  * a typed `T`, per `schema`. Key matching against schema property names is
- * case-insensitive.
+ * case-insensitive. `T` is constrained to an object shape, so
+ * `bindConfig<string>(...)` is a compile error rather than a call that walks a
+ * string's characters as if they were fields.
  *
  * Every issue across the whole shape is collected before anything is
  * thrown -- see the module doc comment. Throws a single `ConfigBindError`
  * if any issues were found; otherwise returns the fully-bound `T`.
  */
-export function bindConfig<T>(config: IConfiguration, schema: SchemaFor<T>, opts?: BindOptions): T {
+export function bindConfig<T extends object>(
+  config: IConfiguration,
+  schema: SchemaFor<T> & ObjectSchema,
+  opts?: BindOptions,
+): T {
   const scoped = opts?.section !== undefined ? config.getSection(opts.section) : config;
   const issues: string[] = [];
-  const value = bindObject(scoped, schema as unknown as Record<string, Schema>, [], issues);
+  const value = bindObject(scoped, schema, [], issues);
 
   if (issues.length > 0) {
     throw new ConfigBindError(issues);

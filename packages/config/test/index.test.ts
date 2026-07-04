@@ -16,6 +16,8 @@ import {
   configPath,
   MemoryConfigurationProvider,
   MemoryConfigurationSource,
+  optional,
+  optionalMarker,
 } from "@fnconfig/config";
 import type {
   BindOptions,
@@ -45,6 +47,11 @@ describe("public entry point", () => {
     expect(configPath).toBeDefined();
     expect(configPath.combine("Server", "Port")).toBe("Server:Port");
     expect(configPath.getSectionKey("Server:Port")).toBe("Port");
+    expect(optional).toBeDefined();
+    expect(typeof optionalMarker).toBe("symbol");
+    // optional(...) boxes its inner schema under the symbol marker, never a
+    // string "optional" key.
+    expect(optional("string")[optionalMarker]).toBe("string");
   });
 
   test("ConfigurationBuilder ships ONLY plain add() (returning this) plus build()", () => {
