@@ -14,6 +14,7 @@ tasks:
     inputs:
       - 'src/**/*'
       - 'build.ts'
+      - '/scripts/build-package.ts'
       - 'rollup.dts.mjs'
       - 'tsconfig.json'
       - '/tsconfig.base.json'

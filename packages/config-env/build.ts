@@ -10,37 +10,11 @@
 //   2. dist/index.d.ts — rollup-plugin-dts rolls the public type surface into
 //      one declaration file, @fnconfig/config external (respectExternal: true).
 
-import { rmSync } from "node:fs";
-import { join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { buildPackage } from "../../scripts/build-package";
 
-const PKG_ROOT = import.meta.dir;
-const DIST = join(PKG_ROOT, "dist");
-const ENTRY = join(PKG_ROOT, "src", "index.ts");
-
-rmSync(DIST, { recursive: true, force: true });
-
-// 1. JS bundle — ESM, node target, @fnconfig/config external.
-const js = await Bun.build({
-  entrypoints: [ENTRY],
-  outdir: DIST,
-  target: "node",
-  format: "esm",
+await buildPackage({
+  name: "@fnconfig/env",
+  pkgRoot: import.meta.dir,
+  emitJs: true,
   external: ["@fnconfig/config", "@fnconfig/core"],
 });
-if (!js.success) {
-  for (const log of js.logs) {
-    console.error(log);
-  }
-  throw new Error("@fnconfig/env: bun build failed");
-}
-
-// 2. Rolled-up .d.ts — @fnconfig/config external.
-const dts = spawnSync(
-  "bun",
-  ["x", "rollup", "-c", join(PKG_ROOT, "rollup.dts.mjs")],
-  { cwd: PKG_ROOT, stdio: "inherit" },
-);
-if (dts.status !== 0) {
-  throw new Error("@fnconfig/env: rollup d.ts bundling failed");
-}
