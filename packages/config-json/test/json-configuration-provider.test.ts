@@ -6,6 +6,9 @@
 // exercised here through the ConfigurationBuilder -> JsonConfigurationSource
 // -> ConfigurationRoot path.
 
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, test } from "bun:test";
 import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "../src/json-configuration-source";
@@ -109,5 +112,29 @@ describe("JsonConfigurationProvider", () => {
       .build();
 
     expect([...root.getChildren()]).toEqual([]);
+  });
+
+  test("reload() drops a key that was removed from the file", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fnconfig-json-"));
+    const filePath = join(dir, "config.json");
+
+    try {
+      writeFileSync(filePath, JSON.stringify({ Keep: "a", Removed: "b" }));
+
+      const root = new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(filePath))
+        .build();
+
+      expect(root.get("Keep")).toBe("a");
+      expect(root.get("Removed")).toBe("b");
+
+      writeFileSync(filePath, JSON.stringify({ Keep: "a" }));
+      root.reload();
+
+      expect(root.get("Keep")).toBe("a");
+      expect(root.get("Removed")).toBeUndefined();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

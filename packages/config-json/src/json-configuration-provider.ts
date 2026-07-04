@@ -21,6 +21,10 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
   }
 
   public override load(): void {
+    // Clear before repopulating: without this, a key removed from the file
+    // since the last load() survives a reload() as a stale entry.
+    this.data.clear();
+
     const resolvedPath = resolve(process.cwd(), this.source.path);
 
     if (!existsSync(resolvedPath)) {
