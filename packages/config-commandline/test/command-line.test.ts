@@ -76,6 +76,24 @@ describe("CommandLineConfigurationProvider -- long form (--Key)", () => {
     });
   });
 
+  test("a boolean flag followed by a registered short switch is boolean-true, not swallowed as its value", () => {
+    // `--Verbose -p 8080` with `-p` registered: without a guard covering
+    // short-switch tokens, `--Verbose` swallows `-p` as its own value ->
+    // {Verbose: "-p"} and Port is dropped, same corruption as the --Port
+    // case above but via a registered short switch instead of a long one.
+    expect(load(["--Verbose", "-p", "8080"], { "-p": "Port" })).toEqual({
+      Verbose: "true",
+      Port: "8080",
+    });
+  });
+
+  test("preserves a negative-number value instead of treating it as a switch", () => {
+    // `--Offset -5`: `-5` is dash-prefixed like a switch, but it's a
+    // legitimate negative-number value, not another switch -- must still
+    // bind Offset="-5" rather than treating --Offset as a valueless boolean.
+    expect(load(["--Offset", "-5"])).toEqual({ Offset: "-5" });
+  });
+
   test('a lone "--" terminates option parsing (standard argv convention)', () => {
     // `--` is the end-of-options marker: everything after it is positional
     // (and this source ignores positionals). It must not be treated as an

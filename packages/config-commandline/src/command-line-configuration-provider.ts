@@ -17,6 +17,14 @@
 // in switch position (the top of each main-loop iteration) -- never to a
 // token consumed as another switch's *value*, so `--Path /usr/bin` is
 // untouched.
+//
+// A `--LongSwitch` with no "=" looks ahead at its next token to decide
+// whether it has a value at all: if that token is itself another switch --
+// long (`--Foo`), a registered short switch (`-p`), or any other `-`-prefixed
+// token that isn't a valid negative number -- the switch is treated as a
+// valueless boolean ("true") instead of swallowing the next switch as its
+// value. A negative number (`--Offset -5`) is the deliberate carve-out: it
+// looks dash-prefixed but is a legitimate value, not a switch.
 
 import { ConfigurationProvider } from "@fnconfig/config";
 
@@ -97,19 +105,53 @@ export class CommandLineConfigurationProvider extends ConfigurationProvider {
       );
     }
 
-    // If the next token is itself a long switch (`--Foo`), this switch has no
-    // value of its own -- treat it as a valueless boolean flag ("true")
-    // rather than consuming the following switch, which would corrupt both
+    // If the next token is itself another switch, this switch has no value of
+    // its own -- treat it as a valueless boolean flag ("true") rather than
+    // consuming the following switch, which would corrupt both
     // (`["--Verbose", "--Port", "8080"]` -> {Verbose: "--Port"}, Port lost).
-    // Restricting the guard to `--` deliberately leaves negative-number
-    // values (e.g. `--Offset -5`) intact.
-    if (value.startsWith("--")) {
+    // "Another switch" covers a long switch (`--Foo`), a registered short
+    // switch (`-p` when `-p` is a switchMappings key -- otherwise
+    // `["--Verbose", "-p", "8080"]` would bind Verbose="-p" and drop Port),
+    // and any other `-`-prefixed token that isn't a valid negative number.
+    // That last carve-out deliberately leaves negative-number values (e.g.
+    // `--Offset -5`) intact -- see looksLikeAnotherSwitch below.
+    if (this.looksLikeAnotherSwitch(value)) {
       this.set(rest, "true");
       return index;
     }
 
     this.set(rest, value);
     return index + 1;
+  }
+
+  /** A negative integer or decimal literal, e.g. "-5" or "-3.14". */
+  private static readonly NEGATIVE_NUMBER_PATTERN = /^-\d+(\.\d+)?$/;
+
+  /**
+   * True when `value` -- the token immediately following a `--LongSwitch`
+   * with no `=` -- is itself another switch rather than this switch's value.
+   * See the call site in {@link consumeLongSwitch} for why this matters.
+   */
+  private looksLikeAnotherSwitch(value: string): boolean {
+    if (value.startsWith("--")) {
+      return true;
+    }
+    if (!value.startsWith("-")) {
+      return false;
+    }
+
+    // A registered short switch (allowing for its own "=value" suffix) is
+    // always another switch, even on the rare chance it happens to look
+    // numeric (e.g. a caller registering "-5" as a switchMappings key).
+    const eqIndex = value.indexOf("=");
+    const switchName = eqIndex !== -1 ? value.slice(0, eqIndex) : value;
+    if (this.foldedSwitchMappings.has(switchName.toLowerCase())) {
+      return true;
+    }
+
+    // Anything else that's "-"-prefixed is another switch UNLESS it's a
+    // valid negative number, which is a legitimate value, not a switch.
+    return !CommandLineConfigurationProvider.NEGATIVE_NUMBER_PATTERN.test(value);
   }
 
   /** Handles a mapped `-x value` / `-x=value` token; returns the new index. */
