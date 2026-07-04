@@ -43,6 +43,21 @@ no-transformer model.
 - **Post-configure hook.** Mentioned in the PR #4 shipping log as
   backlog; no design yet.
 
+## Reviewed architecture decisions — Options
+
+- **Not porting `MEO`.** Validated against the actual upstream reference
+  repo source: Options is a DI-lifetime + reflection-amortization +
+  change-notification wrapper around Configuration binding, and this port
+  has neither reflection (types are erased in TS; `bindConfig` binds
+  explicitly and cheaply) nor a DI container to integrate lifetimes with.
+  Its one broadly useful piece —
+  live reload — is `IConfiguration`'s feature, not Options', and maps to
+  issue [#1](https://github.com/fnioc/config/issues/1) above. Named
+  options and validation already fall out of `bindConfig` as shipped;
+  `PostConfigure` maps to the post-configure hook item above. Full
+  capability-by-capability mapping and source citations:
+  [`docs/no-options-port.md`](./no-options-port.md).
+
 ## Reviewed architecture decisions (confirmed by maintainer 2026-07-01, no changes needed)
 
 Baked into the shipped MVP (PRs #4/#5/#6). Revisit only if a real need
