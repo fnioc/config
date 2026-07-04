@@ -45,7 +45,15 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
       throw error;
     }
 
-    const parsed: unknown = JSON.parse(raw);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `JsonConfigurationProvider: failed to parse ${resolvedPath} as JSON: ${message}`,
+      );
+    }
 
     if (parsed === null || typeof parsed !== "object") {
       throw new Error(

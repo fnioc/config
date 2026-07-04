@@ -98,6 +98,14 @@ describe("JsonConfigurationProvider", () => {
     ).toThrow();
   });
 
+  test("names the file in the malformed-JSON error message", () => {
+    expect(() =>
+      new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(`${FIXTURES}/invalid.json`))
+        .build()
+    ).toThrow(/invalid\.json/);
+  });
+
   test("throws when the JSON root is a scalar", () => {
     expect(() =>
       new ConfigurationBuilder()
