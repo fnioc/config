@@ -8,12 +8,15 @@ Worktree mechanics, branch/PR cleanup, and templated paths are governed by `~/.c
 
 ## Release flow
 
-This repo ships 5 published packages (`@fnconfig/core`, `@fnconfig/config`,
-`@fnconfig/json`, `@fnconfig/env`, `@fnconfig/commandline`) **lockstep** —
-every package in the family carries the same version, bumped together.
-`@fnconfig/core` is a types-only package (interfaces + `ITryGetResult`, zero
-runtime); `@fnconfig/config` is the engine; the other three are provider
-packages. It uses [semantic-release](https://semantic-release.gitbook.io/),
+This repo ships 6 published packages (`@fnconfig/core`, `@fnconfig/config`,
+`@fnconfig/json`, `@fnconfig/env`, `@fnconfig/commandline`,
+`@fnconfig/transformer`) **lockstep** — every package in the family carries
+the same version, bumped together. `@fnconfig/core` is a types-only package
+(interfaces + `ITryGetResult`, zero runtime); `@fnconfig/config` is the
+engine; `@fnconfig/json`/`-env`/`-commandline` are provider packages;
+`@fnconfig/transformer` is the ts-patch compile-time transformer that lowers
+`.withType<T>()` to a generated `.withSchema({...})`. It uses
+[semantic-release](https://semantic-release.gitbook.io/),
 computing exactly ONE version for the whole family from the commit history,
 with a two-stage dist-tag promotion:
 
@@ -23,15 +26,15 @@ with a two-stage dist-tag promotion:
   family (root `package.json` is `private: true`, so
   `@semantic-release/npm` only tags/releases — it never publishes the root
   package itself). The job then runs `moon run :build` across all packages
-  and publishes each of the 5 published packages to npm under the `@next`
+  and publishes each of the 6 published packages to npm under the `@next`
   dist-tag at that one version (`pnpm pack` + `npm publish <tarball>
   --provenance --tag next`, looped per package), and creates a single GitHub
   **pre-release**.
 - Promotion to `@latest` is a **manual gate**. Run the `CI` workflow via
   workflow_dispatch ("Run workflow" in the Actions UI); the `promote` job
   is gated by the `production` environment, which requires reviewer
-  approval. It loops over the same 5 package names, reads each package's
-  `@next` version (confirming all 5 agree — lockstep drift is a hard
+  approval. It loops over the same 6 package names, reads each package's
+  `@next` version (confirming all 6 agree — lockstep drift is a hard
   error), promotes each from `@next` to `@latest` on npm, and converts the
   single GitHub pre-release into the latest release. No rebuild — the
   `@next` artifacts are the `@latest` artifacts, just re-tagged.
@@ -40,7 +43,7 @@ with a two-stage dist-tag promotion:
   status check is green.
 
 Effectively: every PR merge to `main` ships one `@next` pre-release covering
-all 5 packages at the same version. `@latest` is what users get on
+all 6 packages at the same version. `@latest` is what users get on
 `npm install <pkg>` by default — that's the gated step.
 
 ### Version bump rules (conventional commits)
