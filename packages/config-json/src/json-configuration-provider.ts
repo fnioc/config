@@ -7,10 +7,15 @@
 // full stop) rather than also representing "present but null" or "present but
 // empty" as distinct states.
 
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { ConfigurationProvider } from "@fnconfig/config";
 import type { JsonConfigurationSource } from "./json-configuration-source";
+
+/** Whether `err` is a Node `ENOENT` (file-not-found) error. */
+function isFileNotFound(err: unknown): boolean {
+  return typeof err === "object" && err !== null && (err as { code?: string }).code === "ENOENT";
+}
 
 export class JsonConfigurationProvider extends ConfigurationProvider {
   private readonly source: JsonConfigurationSource;
@@ -21,19 +26,49 @@ export class JsonConfigurationProvider extends ConfigurationProvider {
   }
 
   public override load(): void {
+    // Drop any previously-loaded keys so a reload reflects the file's CURRENT
+    // contents -- a key removed from the file must disappear, not linger.
+    this.data.clear();
+
     const resolvedPath = resolve(process.cwd(), this.source.path);
 
-    if (!existsSync(resolvedPath)) {
-      if (this.source.optional) {
-        return;
+    // Read unconditionally and branch on ENOENT rather than existsSync-then-read:
+    // the two-step form has a TOCTOU window (the file can vanish between the
+    // check and the read). A missing file is the `optional` branch; any other
+    // read error rethrows.
+    let raw: string;
+    try {
+      raw = readFileSync(resolvedPath, "utf-8");
+    } catch (err) {
+      if (isFileNotFound(err)) {
+        if (this.source.optional) {
+          return;
+        }
+        throw new Error(
+          `JsonConfigurationProvider: config file not found: ${resolvedPath}`,
+        );
       }
+      throw err;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
       throw new Error(
-        `JsonConfigurationProvider: config file not found: ${resolvedPath}`,
+        `JsonConfigurationProvider: failed to parse JSON at ${resolvedPath}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
       );
     }
 
-    const raw = readFileSync(resolvedPath, "utf-8");
-    const parsed: unknown = JSON.parse(raw);
+    // A JSON document whose root is a scalar or null can't flatten into any
+    // key/value pairs -- reject it loudly rather than silently loading nothing.
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new Error(
+        `JsonConfigurationProvider: root must be an object or array at ${resolvedPath}`,
+      );
+    }
 
     this.flatten(parsed, "");
   }
