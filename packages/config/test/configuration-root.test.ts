@@ -6,16 +6,16 @@
 // root.
 
 import { describe, expect, test } from "bun:test";
-import { ConfigurationBuilder, type IConfigurationProvider } from "@fnconfig/config";
+import { ConfigurationBuilder, type IConfigurationProvider, type IConfigurationRoot } from "@fnconfig/config";
 import { rootOf } from "./support";
 
 /** Builds a root over N in-memory providers, one per data record (registration order). */
-function rootOfLayers(...layers: Record<string, string>[]) {
+function rootOfLayers(...layers: Record<string, string>[]): IConfigurationRoot {
   let builder = new ConfigurationBuilder();
   for (const layer of layers) {
     builder = builder.addInMemoryCollection(layer);
   }
-  return builder.build();
+  return builder.build() as unknown as IConfigurationRoot;
 }
 
 describe("ConfigurationRoot.get (reverse-order precedence)", () => {

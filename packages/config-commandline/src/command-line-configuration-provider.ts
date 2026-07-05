@@ -20,6 +20,11 @@
 
 import { ConfigurationProvider } from "@fnconfig/config";
 
+/** Whether `token` is a syntactically-valid negative number (e.g. `-5`, `-3.14`). */
+function isNegativeNumber(token: string): boolean {
+  return /^-\d/.test(token) && Number.isFinite(Number(token));
+}
+
 export class CommandLineConfigurationProvider extends ConfigurationProvider {
   private readonly argv: readonly string[];
   /** Switch mapping lookup, keyed by lower-cased mapping key for
@@ -97,19 +102,34 @@ export class CommandLineConfigurationProvider extends ConfigurationProvider {
       );
     }
 
-    // If the next token is itself a long switch (`--Foo`), this switch has no
-    // value of its own -- treat it as a valueless boolean flag ("true")
-    // rather than consuming the following switch, which would corrupt both
-    // (`["--Verbose", "--Port", "8080"]` -> {Verbose: "--Port"}, Port lost).
-    // Restricting the guard to `--` deliberately leaves negative-number
-    // values (e.g. `--Offset -5`) intact.
-    if (value.startsWith("--")) {
+    // If the next token can't be this switch's value, this switch is a
+    // valueless boolean flag ("true") rather than consuming the following
+    // token -- which would corrupt both (`["--Verbose", "--Port", "8080"]`
+    // -> {Verbose: "--Port"}, Port lost). A follower is unusable as a value
+    // when it's another switch (`--Foo`), a registered short switch (`-p`),
+    // or any other `-`-led token that isn't a negative number. Negative
+    // numbers (`--Offset -5`) stay intact, and a genuine dash-led string
+    // value is reachable via the `=` form (`--Key=-x`).
+    if (this.isValuelessFollower(value)) {
       this.set(rest, "true");
       return index;
     }
 
     this.set(rest, value);
     return index + 1;
+  }
+
+  /**
+   * Whether `token`, appearing where a `--Key`'s value would be, cannot be
+   * that value -- so the `--Key` is a valueless boolean flag. True for any
+   * `-`-led token that is not a negative number, and for any registered short
+   * switch.
+   */
+  private isValuelessFollower(token: string): boolean {
+    if (this.foldedSwitchMappings.has(token.toLowerCase())) {
+      return true;
+    }
+    return token.startsWith("-") && !isNegativeNumber(token);
   }
 
   /** Handles a mapped `-x value` / `-x=value` token; returns the new index. */

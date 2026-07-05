@@ -1,51 +1,13 @@
 // Build @fnconfig/json for publication.
 //
-// This repo standardized on `moduleResolution: bundler` + extensionless
-// relative imports (see /tsconfig.base.json). A plain `tsc` emit would leave
-// those specifiers extensionless in dist/, which plain Node ESM cannot
-// resolve — so every published package bundles instead. `@fnconfig/config` stays
-// EXTERNAL here (unlike ioc@fnioc's di-inlines-core pattern): the augmentation
-// pattern patches `ConfigurationBuilder.prototype` from the CONSUMER's copy of
-// @fnconfig/config, so bundling a private copy in would leave the sugar method
-// installed on a class the consumer never touches -- see the plan's
-// "critical constraint" callout.
-//
-//   1. dist/index.js   — `bun build` bundles the ESM entry, `@fnconfig/config`
-//      external.
-//   2. dist/index.d.ts — rollup-plugin-dts rolls the public type surface into
-//      one declaration file, `@fnconfig/config` external (respectExternal: true).
+// @fnconfig/config stays EXTERNAL: the addJsonFile augmentation patches the
+// CONSUMER's ConfigurationBuilder.prototype, so a private inlined copy would
+// leave the sugar method installed on a class the consumer never touches.
 
-import { rmSync } from "node:fs";
-import { join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { buildPackage } from "../../scripts/build-package";
 
-const PKG_ROOT = import.meta.dir;
-const DIST = join(PKG_ROOT, "dist");
-const ENTRY = join(PKG_ROOT, "src", "index.ts");
-
-rmSync(DIST, { recursive: true, force: true });
-
-// 1. JS bundle — @fnconfig/config external (a peer dep — consumers have it).
-const js = await Bun.build({
-  entrypoints: [ENTRY],
-  outdir: DIST,
-  target: "node",
-  format: "esm",
+await buildPackage({
+  dir: import.meta.dir,
+  name: "@fnconfig/json",
   external: ["@fnconfig/config", "@fnconfig/core"],
 });
-if (!js.success) {
-  for (const log of js.logs) {
-    console.error(log);
-  }
-  throw new Error("@fnconfig/json: bun build failed");
-}
-
-// 2. Rolled-up .d.ts — @fnconfig/config external.
-const dts = spawnSync(
-  "bun",
-  ["x", "rollup", "-c", join(PKG_ROOT, "rollup.dts.mjs")],
-  { cwd: PKG_ROOT, stdio: "inherit" },
-);
-if (dts.status !== 0) {
-  throw new Error("@fnconfig/json: rollup d.ts bundling failed");
-}

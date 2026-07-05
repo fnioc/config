@@ -6,7 +6,10 @@
 // exercised here through the ConfigurationBuilder -> JsonConfigurationSource
 // -> ConfigurationRoot path.
 
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "../src/json-configuration-source";
 // Side-effect import: installs `addJsonFile` onto ConfigurationBuilder.
@@ -109,5 +112,59 @@ describe("JsonConfigurationProvider", () => {
       .build();
 
     expect([...root.getChildren()]).toEqual([]);
+  });
+
+  test("throws when the JSON root is a scalar", () => {
+    expect(() =>
+      new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(`${FIXTURES}/scalar.json`))
+        .build()
+    ).toThrow(/root must be an object or array/);
+  });
+
+  test("throws when the JSON root is null", () => {
+    expect(() =>
+      new ConfigurationBuilder()
+        .add(new JsonConfigurationSource(`${FIXTURES}/null-root.json`))
+        .build()
+    ).toThrow(/root must be an object or array/);
+  });
+});
+
+describe("JsonConfigurationProvider reload + error hardening (#17)", () => {
+  let dir: string;
+
+  afterEach(() => {
+    if (dir !== undefined) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("reload after a key is removed from the file drops the stale key", () => {
+    dir = mkdtempSync(join(tmpdir(), "fnconfig-json-"));
+    const file = join(dir, "app.json");
+    writeFileSync(file, JSON.stringify({ Keep: "1", Drop: "2" }));
+
+    const source = new JsonConfigurationSource(file);
+    const provider = source.build({} as never);
+    provider.load();
+    expect(provider.tryGet("Keep")).toEqual([true, "1"]);
+    expect(provider.tryGet("Drop")).toEqual([true, "2"]);
+
+    writeFileSync(file, JSON.stringify({ Keep: "1" }));
+    provider.load();
+
+    expect(provider.tryGet("Keep")).toEqual([true, "1"]);
+    // Without data.clear() on load, the removed key would linger.
+    expect(provider.tryGet("Drop")).toEqual([false]);
+  });
+
+  test("malformed JSON error message includes the resolved path", () => {
+    dir = mkdtempSync(join(tmpdir(), "fnconfig-json-"));
+    const file = join(dir, "bad.json");
+    writeFileSync(file, "{ not valid json");
+
+    const provider = new JsonConfigurationSource(file).build({} as never);
+    expect(() => provider.load()).toThrow(new RegExp(file.replace(/[.\\]/g, "\\$&")));
   });
 });

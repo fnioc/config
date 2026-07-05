@@ -1,32 +1,18 @@
-
-function isIterable(value: any): value is Iterable<any> {
-    return !!value[Symbol.iterator];
+// A string is itself iterable (char by char), so a naive `Symbol.iterator in
+// value` check would treat `combine("Host")` as an iterable of characters and
+// recurse into `combine("H", "o", "s", "t")` -> "H:o:s:t" (and infinite-loops
+// on a 1-char string). Excluding strings (and null/undefined) keeps the
+// single-string overload returning the string verbatim.
+function isIterable(value: unknown): value is Iterable<unknown> {
+    return typeof value === "object" && value !== null && Symbol.iterator in value;
 }
 
-/// <summary>
-/// Provides utility methods and constants for manipulating Configuration paths.
-/// </summary>
+// Utility functions and constants for manipulating configuration paths.
 
-/// <summary>
-/// The delimiter ":" used to separate individual keys in a path.
-/// </summary>
+/** The delimiter ":" used to separate individual keys in a path. */
 export const KeyDelimiter = ":";
 
-/// <summary>
-/// Combines path segments into one path.
-/// </summary>
-/// <param name="pathSegments">The path segments to combine.</param>
-/// <returns>The combined path.</returns>
-// export function Combine(...pathSegments:string[])
-// {
-//     return pathSegments.join(this.KeyDelimiter);
-// }
-
-/// <summary>
-/// Combines path segments into one path.
-/// </summary>
-/// <param name="pathSegments">The path segments to combine.</param>
-/// <returns>The combined path.</returns>
+/** Combines path segments into one colon-delimited path. */
 export function combine(...pathSegments: string[]): string;
 export function combine(pathSegments: Iterable<string>): string;
 export function combine(...args: [pathSegments: Iterable<string>] | [...pathSegments: string[]]) {
@@ -36,12 +22,7 @@ export function combine(...args: [pathSegments: Iterable<string>] | [...pathSegm
     return Array.from(args).join(KeyDelimiter);
 }
 
-/// <summary>
-/// Extracts the last path segment from the path.
-/// </summary>
-/// <param name="path">The path.</param>
-/// <returns>The last path segment of the path.</returns>
-// [return: NotNullIfNotNull(nameof(path))]
+/** Extracts the last path segment from `path`. */
 export function getSectionKey(path?: string) {
     if (!path?.trim()) {
         return path;
@@ -51,11 +32,10 @@ export function getSectionKey(path?: string) {
     return lastDelimiterIndex < 0 ? path : path.substring(lastDelimiterIndex + 1);
 }
 
-/// <summary>
-/// Extracts the path corresponding to the parent node for a given path.
-/// </summary>
-/// <param name="path">The path.</param>
-/// <returns>The original path minus the last individual segment found in it. Null if the original path corresponds to a top level node.</returns>
+/**
+ * Extracts the parent path for `path` -- the original minus its last segment,
+ * or `null` if `path` is already a top-level node.
+ */
 export function getParentPath(path?: string) {
     if (!path?.trim()) {
         return null;

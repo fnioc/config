@@ -9,14 +9,18 @@
 // DECLARES the class so the merge survives the re-export through the package
 // barrel.
 
+import type { IndexedSection } from "@fnconfig/core";
 import { ConfigurationBuilder } from "../configuration-builder";
 import { type ConfigurationData, MemoryConfigurationSource } from "./memory-configuration-source";
 
 export { MemoryConfigurationProvider } from "./memory-configuration-provider";
 export { type ConfigurationData, MemoryConfigurationSource } from "./memory-configuration-source";
 
+// The generic arity + default MUST match the class declaration exactly, or
+// declaration merging fails (TS2428). Every augmentation spells `<T =
+// IndexedSection>` and imports the same `IndexedSection` from @fnconfig/core.
 declare module "../configuration-builder" {
-  interface ConfigurationBuilder {
+  interface ConfigurationBuilder<T = IndexedSection> {
     /** Registers an in-memory configuration source seeded with `initialData`. */
     addInMemoryCollection(initialData?: ConfigurationData): this;
   }

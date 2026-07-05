@@ -15,10 +15,10 @@ argument, so the printed output is deterministic:
 
 ```
 === @fnconfig/config -- basic ===
-server: {"host":"10.0.0.5","port":8080,"ssl":true}
-database primary: {"host":"db-primary.internal","database":"app","poolSize":10}
-database replica: {"host":"db-replica.internal","database":"app","poolSize":5}
-looked up directly: Server:Host=10.0.0.5, Server:Port=8080
+server: {"Host":"10.0.0.5","Port":8080,"Ssl":true}
+database primary: {"Host":"db-primary.internal","Database":"app","PoolSize":10}
+database replica: {"Host":"db-replica.internal","Database":"app","PoolSize":5}
+raw Server:Host=10.0.0.5, getNum(Server:Port)=8080
 ```
 
 ## What this demonstrates
@@ -38,13 +38,15 @@ looked up directly: Server:Host=10.0.0.5, Server:Port=8080
   `import "@fnconfig/json";` lines alongside the named `@fnconfig/config`
   import. `addInMemoryCollection` needs no such import -- it ships directly
   on `@fnconfig/config`.
-- **`SchemaFor<T>`-checked hand-written schemas**: `SERVER_CONFIG_SCHEMA` and
-  `DATABASE_CONFIG_SCHEMA` in `src/main.ts` are typed `SchemaFor<ServerConfig>`
-  / `SchemaFor<DatabaseConfig>`. Get a field wrong -- missing, extra, wrong
-  primitive kind, or a bare (unwrapped) optional -- and `tsc` rejects it; this
-  is checked against the real, built `@fnconfig/config` package, not a design
-  sketch.
-- **Section-scoped binding, twice, of the same shape**: `primary` and
-  `replica` are both bound from `DATABASE_CONFIG_SCHEMA`, one from the
-  `Database:Primary` section and one from `Database:Replica` -- proof that a
-  single reusable schema binds independent values out of different sections.
+- **Tier 1 -- `withSchema` coercion**: one runtime schema literal (`SCHEMA` in
+  `src/main.ts`) is the single source of truth for both the shape and its
+  static type. `withSchema(SCHEMA).build()` returns a fully-coerced plain
+  object -- `Server.Port` is a real `number`, `Server.Ssl` a `boolean` -- and a
+  missing required key or a non-numeric `Port` throws a `SchemaCoercionError`
+  listing every problem at once. An optional field is wrapped inline with the
+  `OPTIONAL` symbol, so a real config key named `optional` can never be
+  mistaken for the wrapper.
+- **Tier 0 -- on-demand helpers**: `build()` without a schema returns the
+  untyped Section tree. Read raw strings with `get`, navigate with
+  `getSection`, and coerce a leaf only where you need it
+  (`getSection("Server").getNum("Port")`).

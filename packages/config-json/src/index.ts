@@ -10,6 +10,7 @@
 // This package must NOT set `"sideEffects": false` in package.json (would
 // let a bundler tree-shake the augmentation away).
 
+import type { IndexedSection } from "@fnconfig/core";
 import { ConfigurationBuilder } from "@fnconfig/config";
 import { JsonConfigurationSource } from "./json-configuration-source";
 import type { JsonConfigurationSourceOptions } from "./json-configuration-source";
@@ -22,7 +23,9 @@ import type { JsonConfigurationSourceOptions } from "./json-configuration-source
 // (e.g. core's own addInMemoryCollection) is also in the program. See the
 // "configuration-builder-subpath" note in @fnconfig/config's package.json.
 declare module "@fnconfig/config/configuration-builder" {
-  interface ConfigurationBuilder {
+  // Generic arity + default MUST match the class (TS2428) -- `<T =
+  // IndexedSection>`, same IndexedSection imported from @fnconfig/core.
+  interface ConfigurationBuilder<T = IndexedSection> {
     /** Registers a {@link JsonConfigurationSource} reading `path` (resolved against `process.cwd()`). */
     addJsonFile(path: string, opts?: JsonConfigurationSourceOptions): this;
   }

@@ -1,7 +1,7 @@
 {
   "name": "@fnconfig/config",
   "version": "0.0.0",
-  "description": "Layered configuration engine: ConfigurationBuilder/Root/Section, ConfigurationKeyComparer, the Memory provider, and a compile-time-checked schema binder.",
+  "description": "Layered configuration engine: ConfigurationBuilder/Root/Section, ConfigurationKeyComparer, the Memory provider, an index-navigable Section tree, and a runtime schema (Schema/Infer/OPTIONAL) that coerces on build().",
   "keywords": [
     "configuration",
     "config",
@@ -31,6 +31,13 @@
       "source": "./src/configuration-builder.ts",
       "bun": "./src/configuration-builder.ts",
       "types": "./src/configuration-builder.ts"
+    },
+    "./with-type-augment": {
+      "source": "./src/with-type-augment.ts",
+      "bun": "./src/with-type-augment.ts",
+      "types": "./src/with-type-augment.ts",
+      "import": "./dist/with-type-augment.js",
+      "default": "./dist/with-type-augment.js"
     }
   },
   "files": [
@@ -43,6 +50,9 @@
   },
   "dependencies": {
     "@fnconfig/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@rhombus-toolkit/proxy-base": "^1.0.0"
   },
   "publishConfig": {
     "access": "public",
@@ -59,6 +69,11 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js",
         "default": "./dist/index.js"
+      },
+      "./with-type-augment": {
+        "types": "./dist/with-type-augment.d.ts",
+        "import": "./dist/with-type-augment.js",
+        "default": "./dist/with-type-augment.js"
       }
     }
   }

@@ -17,8 +17,10 @@ tasks:
       - 'src/**/*'
       - 'build.ts'
       - 'rollup.dts.mjs'
+      - 'rollup.with-type-augment.dts.mjs'
       - 'tsconfig.json'
       - '/tsconfig.base.json'
+      - '/scripts/build-package.ts'
     outputs:
       - 'dist'
   test:
