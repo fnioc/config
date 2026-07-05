@@ -44,7 +44,7 @@ jobs:
   # ── Publish @next ─────────────────────────────────────────────────────────
   # Runs on every push to main. Uses semantic-release to determine ONE version
   # for the whole family from conventional commits (lockstep — every package
-  # in the family carries the same version), then builds and publishes all 5
+  # in the family carries the same version), then builds and publishes all 6
   # packages to npm under the @next dist-tag at that one version, plus a
   # GitHub pre-release. Nothing is published on PRs or merge_group.
   publish-next:
@@ -73,14 +73,15 @@ jobs:
           experimental: true
       - run: bun install --frozen-lockfile
 
-      # Build all 5 published packages so dist/ exists to pack.
+      # Build all 6 published packages so dist/ exists to pack.
       - name: Build all packages
         run: bun x moon run :build
 
-      # Pack and publish each of the 5 published packages (core is the
+      # Pack and publish each of the 6 published packages (core is the
       # types-only abstractions; config is the engine; config-json/-env/
-      # -commandline are the providers) at the ONE version semantic-release
-      # just computed, all to @next.
+      # -commandline are the providers; config-transformer is the ts-patch
+      # compile-time transformer) at the ONE version semantic-release just
+      # computed, all to @next.
       #
       # Why pnpm pack (not `bun pm pack`): each package's workspace
       # package.json carries dev-time source exports (main/types/exports
@@ -99,7 +100,7 @@ jobs:
       - name: Pack and publish all packages to @next
         run: |
           set -euo pipefail
-          for pkg_path in packages/core packages/config packages/config-json packages/config-env packages/config-commandline; do
+          for pkg_path in packages/core packages/config packages/config-json packages/config-env packages/config-commandline packages/config-transformer; do
             echo "::group::Packing and publishing $pkg_path"
             tarball=$(cd "$pkg_path" && pnpm pack --pack-destination /tmp 2>&1 | grep '\.tgz$' | tail -1)
             npm publish "$tarball" --provenance --tag next
@@ -108,7 +109,7 @@ jobs:
 
   # ── Promote @next → @latest ───────────────────────────────────────────────
   # Triggered manually via "Run workflow" in the GitHub Actions UI.
-  # Under lockstep versioning all 5 packages share the same @next version;
+  # Under lockstep versioning all 6 packages share the same @next version;
   # promote each to @latest on npm, then mark the corresponding GitHub
   # pre-release as the latest release. No rebuild — the same artifacts are
   # just re-tagged.
@@ -132,9 +133,9 @@ jobs:
         id: resolve
         run: |
           set -euo pipefail
-          # All 5 packages are lockstep — read the version off each and
+          # All 6 packages are lockstep — read the version off each and
           # confirm they agree before promoting any of them.
-          packages="@fnconfig/core @fnconfig/config @fnconfig/json @fnconfig/env @fnconfig/commandline"
+          packages="@fnconfig/core @fnconfig/config @fnconfig/json @fnconfig/env @fnconfig/commandline @fnconfig/transformer"
           version=""
           for pkg in $packages; do
             v=$(npm view "$pkg" dist-tags.next 2>/dev/null)
