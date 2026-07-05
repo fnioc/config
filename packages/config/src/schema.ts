@@ -1,92 +1,68 @@
-// Compile-time-checked configuration schemas.
+// Runtime-inspectable configuration schemas.
 //
-// SchemaFor<T> is the type-level "shape description" of an interface T that
-// bindConfig (see bind.ts) walks at runtime to bind a flat ConfigurationRoot
-// into a typed T. Because SchemaFor<T> is derived directly from T via
-// mapped/conditional types, writing a schema literal that doesn't match T
-// exactly (missing field, extra field, wrong primitive kind, or a missing
-// `{ optional: ... }` wrapper on an optional field) is a compile error --
-// the schema and the interface can never silently drift apart.
+// A `Schema` is a hand-writable, runtime value that both DESCRIBES a config
+// shape (so build() can coerce against it) and, via `Infer`, PRODUCES the
+// static type build() returns. Leaves are kind-name strings ("string" /
+// "number" / "boolean"); nesting is a plain object; an optional field is
+// wrapped with the `OPTIONAL` symbol.
 //
-// This is verified (via `tsc --strict`) to catch: missing fields, extra
-// fields, wrong-kind primitives, and un-wrapped optional fields, for both
-// primitives and nested objects. It intentionally does not cover arrays or
-// unions -- out of scope for this MVP.
-
-type Prim<T> = [T] extends [boolean] ? "boolean"
-  : [T] extends [string] ? "string"
-  : [T] extends [number] ? "number"
-  : never;
-
-type IsOptional<T, K extends keyof T> = {} extends Pick<T, K> ? true : false;
+// The optional wrapper is keyed by a UNIQUE SYMBOL, not the property name
+// "optional" -- so a real config property literally named "optional" can never
+// be mistaken for the wrapper. This is a permanent property of the design, not
+// a heuristic that can drift.
 
 /**
- * The schema shape that exactly matches interface `T`, field for field.
+ * Out-of-band discriminator for the optional-field wrapper. A `unique symbol`,
+ * so a real config key named `"optional"` never collides with it.
+ */
+export const OPTIONAL: unique symbol = Symbol("@fnconfig/config.OPTIONAL");
+export type OPTIONAL = typeof OPTIONAL;
+
+/** The optional-field wrapper: `{ [OPTIONAL]: innerSchema }`. */
+export type OptionalSchema = { readonly [OPTIONAL]: Schema };
+
+/** A nested object schema: string keys mapping to sub-schemas. */
+export type ObjectSchema = { readonly [key: string]: Schema };
+
+/**
+ * A hand-writable, runtime-inspectable schema. Drives coercion in `build()`.
+ * Leaves are kind-name strings; nesting is a plain object; an optional field is
+ * wrapped with the {@link OPTIONAL} symbol.
+ */
+export type Schema = "string" | "number" | "boolean" | OptionalSchema | ObjectSchema;
+
+type OptionalKeys<S> = {
+  [K in keyof S]-?: S[K] extends OptionalSchema ? K : never;
+}[keyof S];
+type RequiredKeys<S> = Exclude<keyof S, OptionalKeys<S>>;
+
+/**
+ * The type-level image of a `Schema`: the shape `build()` produces. Leaves map
+ * to their scalar type; `{ [OPTIONAL]: S }` maps to `Infer<S> | undefined` and
+ * makes the containing key optional (`?`); a plain object recurses.
  *
- * Write a `SchemaFor<T>` literal by hand and pass it to {@link bindConfig}
- * to bind a `ConfigurationRoot` into a typed `T` -- and get a compile error
- * from `tsc` the moment the literal drifts from `T`: a missing field, an
- * extra field, the wrong primitive kind (`"string"` vs `"number"` vs
- * `"boolean"`), or an optional field that isn't wrapped in `{ optional:
- * ... }` are all rejected before the code ever runs.
- *
- * Primitives map to their kind name (`boolean` -> `"boolean"`, etc.);
- * objects map to an object of `SchemaFor<...>` per property, with optional
- * properties (`T[K]` including `undefined`) required to be wrapped as
- * `{ optional: SchemaFor<...> }`. Arrays and unions are intentionally out
- * of scope for this MVP.
+ * The OPTIONAL branch MUST precede the object branch -- an `OptionalSchema`
+ * also structurally satisfies `object`, so branch order is what discriminates
+ * it.
  *
  * @example
  * ```ts
- * interface ServerConfig {
- *   readonly host: string;
- *   readonly port: number;
- *   readonly ssl?: boolean;
- * }
- *
- * const schema: SchemaFor<ServerConfig> = {
- *   host: "string",
- *   port: "number",
- *   ssl: { optional: "boolean" },
- * };
+ * const schema = {
+ *   Host: "string",
+ *   Port: "number",
+ *   Ssl: { [OPTIONAL]: "boolean" },
+ * } as const satisfies Schema;
+ * type Config = Infer<typeof schema>;
+ * // { readonly Host: string; readonly Port: number; readonly Ssl?: boolean }
  * ```
  */
-export type SchemaFor<T> = [T] extends [boolean | string | number] ? Prim<T>
-  : [T] extends [object] ? {
-      [K in keyof T]-?: IsOptional<T, K> extends true
-        ? { optional: SchemaFor<Required<T>[K]> }
-        : SchemaFor<T[K]>;
-    }
+export type Infer<S> = S extends "string" ? string
+  : S extends "number" ? number
+  : S extends "boolean" ? boolean
+  : S extends { readonly [OPTIONAL]: infer Inner }
+    ? (Inner extends Schema ? Infer<Inner> | undefined : never)
+  : S extends object ? (
+      & { readonly [K in RequiredKeys<S>]: Infer<S[K]> }
+      & { readonly [K in OptionalKeys<S>]?: Infer<S[K]> }
+    )
   : never;
-
-/**
- * The untyped shape a {@link SchemaFor} value erases to at the type level --
- * a primitive-kind string, an `{ optional: Schema }` wrapper, or a nested
- * object of `Schema` values. `bindConfig` and its internals operate on this
- * looser type so they don't need to be generic over every possible `T`.
- *
- * Also usable directly by greenfield callers who'd rather write a schema
- * value first and derive its bound type from it via {@link Infer}, instead
- * of hand-writing an interface and a `SchemaFor<T>` literal that must match
- * it field for field.
- */
-export type Schema = "string" | "number" | "boolean" | { optional: Schema } | { [k: string]: Schema };
-
-/**
- * Type-level inverse of {@link SchemaFor}: derives the bound value's type
- * from a `Schema` value, rather than checking a schema literal against an
- * already-declared interface. `{ optional: S }` maps to `Infer<S> |
- * undefined`, matching what `bindConfig` actually produces for a
- * present-vs-absent optional field.
- *
- * @example
- * ```ts
- * const schema = { host: "string", port: "number" } as const satisfies Schema;
- * type Config = Infer<typeof schema>; // { host: string; port: number }
- * ```
- */
-export type Infer<S> =
-  S extends "string" ? string : S extends "number" ? number :
-  S extends "boolean" ? boolean :
-  S extends { optional: infer I } ? Infer<I> | undefined :
-  S extends object ? { [K in keyof S]: Infer<S[K]> } : never;

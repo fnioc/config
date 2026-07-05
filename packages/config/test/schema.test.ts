@@ -1,114 +1,60 @@
-// Compile-time regression coverage for SchemaFor<T> -- see src/schema.ts's
-// module doc comment for the full claim being tested: a hand-written
-// SchemaFor<T> schema literal must fail to compile the moment it drifts
-// from T (missing field, extra field, wrong primitive kind, or a bare
-// unwrapped optional -- for both top-level and nested-object fields), and a
-// schema that matches T exactly must compile with no errors.
-//
-// It's `test/*.ts`, so `bun test` alone does not type-check it (bun does not
-// type-check anything); what makes these `@ts-expect-error` assertions
-// load-bearing is `moon run config:lint` running `tsc -p tsconfig.lint.json`,
-// which (unlike the base `tsconfig.json` used by `build`) includes
-// `test/**/*` -- see that config's own doc comment. If `SchemaFor<T>` ever
-// silently loosens (or the lint config regresses back to `src/**/*` only),
-// one of the `@ts-expect-error` comments below stops matching a real error
-// and `tsc` fails the build with "Unused '@ts-expect-error' directive".
+// Compile-time regression coverage for the runtime `Schema` + `Infer` +
+// `OPTIONAL` design. `bun test` does not type-check anything; what makes these
+// assertions load-bearing is `moon run config:lint` running
+// `tsc -p tsconfig.lint.json` (which includes test/**/*). The `@ts-expect-error`
+// lines below fail the build with "Unused '@ts-expect-error' directive" if the
+// types ever silently loosen.
 
 import { describe, expect, test } from "bun:test";
-import type { SchemaFor } from "@fnconfig/config";
+import { OPTIONAL } from "@fnconfig/config";
+import type { Infer, Schema } from "@fnconfig/config";
 
-interface Nested {
-  value: string;
-}
+// A valid schema authored inline with the OPTIONAL symbol wrapper compiles, and
+// Infer yields the expected shape (required keys required, optional keys `?`).
+const serverSchema = {
+  Host: "string",
+  Port: "number",
+  Ssl: { [OPTIONAL]: "boolean" },
+} as const satisfies Schema;
 
-interface Target {
-  host: string;
-  port: number;
-  enabled: boolean;
-  timeout?: number;
-  nested: Nested;
-}
+type ServerConfig = Infer<typeof serverSchema>;
 
-// A schema that matches Target field-for-field must compile with no errors.
-const validSchema: SchemaFor<Target> = {
-  host: "string",
-  port: "number",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  nested: { value: "string" },
-};
+const ok: ServerConfig = { Host: "h", Port: 8080 }; // Ssl omittable
+const ok2: ServerConfig = { Host: "h", Port: 8080, Ssl: true };
+// @ts-expect-error -- Port must be a number, not a string
+const bad: ServerConfig = { Host: "h", Port: "80" };
+// @ts-expect-error -- Host is required
+const missing: ServerConfig = { Port: 8080 };
 
-// A field missing from the schema is a compile error.
-// @ts-expect-error -- "port" is missing from Target's required fields
-const missingField: SchemaFor<Target> = {
-  host: "string",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  nested: { value: "string" },
-};
+// The PR #18 collision case, now permanent: a real string property literally
+// named "optional" is a NESTED key, NOT the optional wrapper (the wrapper is
+// keyed by the OPTIONAL symbol). So `optional` is REQUIRED.
+type WithLiteralOptional = Infer<{ optional: "string"; flag: { [OPTIONAL]: "boolean" } }>;
+const collide: WithLiteralOptional = { optional: "x" }; // flag is `?`, optional is required
+// @ts-expect-error -- the `optional` property is required, not omittable
+const collideMissing: WithLiteralOptional = { flag: true };
 
-// A field not present on Target is a compile error.
-const extraField: SchemaFor<Target> = {
-  host: "string",
-  port: "number",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  nested: { value: "string" },
-  // @ts-expect-error -- "extra" is not a property of Target
-  extra: "string",
-};
+// The OPTIONAL branch precedes the object branch: an OptionalSchema infers to
+// `Inner | undefined`, not to an object with a symbol key.
+type OptionalLeaf = Infer<{ [OPTIONAL]: "number" }>;
+const optLeaf1: OptionalLeaf = 5;
+const optLeaf2: OptionalLeaf = undefined;
 
-// The wrong primitive kind for a field is a compile error.
-const wrongKind: SchemaFor<Target> = {
-  host: "string",
-  // @ts-expect-error -- "port" is a number, not a string
-  port: "string",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  nested: { value: "string" },
-};
+// Nested objects recurse.
+type Nested = Infer<{ Server: { Host: "string" }; Db: { Url: "string" } }>;
+const nested: Nested = { Server: { Host: "h" }, Db: { Url: "u" } };
 
-// An optional field that isn't wrapped in `{ optional: ... }` is a compile error.
-const unwrappedOptional: SchemaFor<Target> = {
-  host: "string",
-  port: "number",
-  enabled: "boolean",
-  // @ts-expect-error -- "timeout" must be `{ optional: "number" }`, not a bare "number"
-  timeout: "number",
-  nested: { value: "string" },
-};
-
-// A nested object schema missing one of its own required fields is a compile error.
-const nestedMissingField: SchemaFor<Target> = {
-  host: "string",
-  port: "number",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  // @ts-expect-error -- nested.value is missing
-  nested: {},
-};
-
-// A nested object schema with the wrong primitive kind is a compile error.
-const nestedWrongKind: SchemaFor<Target> = {
-  host: "string",
-  port: "number",
-  enabled: "boolean",
-  timeout: { optional: "number" },
-  // @ts-expect-error -- nested.value is a string, not a number
-  nested: { value: "number" },
-};
-
-describe("SchemaFor<T>", () => {
-  test("a schema literal that matches T field-for-field binds to the expected shape", () => {
-    expect(validSchema).toEqual({
-      host: "string",
-      port: "number",
-      enabled: "boolean",
-      timeout: { optional: "number" },
-      nested: { value: "string" },
-    });
-    expect([missingField, extraField, wrongKind, unwrappedOptional, nestedMissingField, nestedWrongKind].length).toBe(
-      6,
-    );
+describe("Schema / Infer / OPTIONAL", () => {
+  test("the compile-time fixtures above hold at runtime too", () => {
+    expect(ok.Host).toBe("h");
+    expect(ok2.Ssl).toBe(true);
+    expect(bad.Port as unknown).toBe("80");
+    expect(missing.Port).toBe(8080);
+    expect(collide.optional).toBe("x");
+    expect(collideMissing.flag).toBe(true);
+    expect(optLeaf1).toBe(5);
+    expect(optLeaf2).toBeUndefined();
+    expect(nested.Server.Host).toBe("h");
+    expect(typeof OPTIONAL).toBe("symbol");
   });
 });

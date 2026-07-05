@@ -7,7 +7,11 @@
 import { type ConfigurationData, ConfigurationBuilder } from "@fnconfig/config";
 import type { IConfigurationRoot } from "@fnconfig/config";
 
-/** Builds a ConfigurationRoot from in-memory `entries` (a Record or `[k,v]` iterable). */
+/**
+ * Builds a ConfigurationRoot from in-memory `entries` (a Record or `[k,v]`
+ * iterable). Tier-0 `build()` types its result as `IndexedSection`; tests that
+ * need the root surface (reload/providers) take it as `IConfigurationRoot`.
+ */
 export function rootOf(entries: ConfigurationData): IConfigurationRoot {
-  return new ConfigurationBuilder().addInMemoryCollection(entries).build();
+  return new ConfigurationBuilder().addInMemoryCollection(entries).build() as unknown as IConfigurationRoot;
 }

@@ -6,6 +6,7 @@
 // runtime symbol from this package (only wants the sugar) needs a bare
 // side-effect import: `import "@fnconfig/env";`.
 
+import type { IndexedSection } from "@fnconfig/core";
 import { ConfigurationBuilder } from "@fnconfig/config";
 import {
   type EnvironmentVariablesConfigurationSourceOptions,
@@ -13,7 +14,8 @@ import {
 } from "./environment-variables-configuration-source";
 
 declare module "@fnconfig/config/configuration-builder" {
-  interface ConfigurationBuilder {
+  // Generic arity + default MUST match the class (TS2428).
+  interface ConfigurationBuilder<T = IndexedSection> {
     /**
      * Registers an {@link EnvironmentVariablesConfigurationSource} seeded from
      * `process.env`, per an optional `options.prefix` and

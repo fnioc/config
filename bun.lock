@@ -35,6 +35,9 @@
       "dependencies": {
         "@fnconfig/core": "workspace:*",
       },
+      "devDependencies": {
+        "@rhombus-toolkit/proxy-base": "^1.0.0",
+      },
     },
     "packages/config-commandline": {
       "name": "@fnconfig/commandline",
@@ -166,6 +169,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@rhombus-toolkit/proxy-base": ["@rhombus-toolkit/proxy-base@1.0.0", "", {}, "sha512-vwwhCwLeru/oUza+oKXUzMFW79/NsgtjNC+2TiZRVZZai260K6s1EnOIptSXCuOY+B4j8qf4PYmYC8WS2d7BMA=="],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.62.2", "", { "os": "android", "cpu": "arm" }, "sha512-6o7ZLZK+BeenkZCFNDXqpbjw9bD6nuWonvS/lwQJp7NoVVxm6p3qE7qQ5jGuBjiFsgvqjD8mZAU5oWxTmbOeOg=="],
 

@@ -12,6 +12,7 @@
 // module patches is the SAME class instance the consumer's own
 // `@fnconfig/config` import resolves to, not a private inlined copy.
 
+import type { IndexedSection } from "@fnconfig/core";
 import { ConfigurationBuilder } from "@fnconfig/config";
 import type { CommandLineConfigurationSourceOptions } from "./command-line-configuration-source";
 import { CommandLineConfigurationSource } from "./command-line-configuration-source";
@@ -25,7 +26,8 @@ import { CommandLineConfigurationSource } from "./command-line-configuration-sou
 // also in the program. See the "configuration-builder-subpath" note in
 // @fnconfig/config's package.json.
 declare module "@fnconfig/config/configuration-builder" {
-  interface ConfigurationBuilder {
+  // Generic arity + default MUST match the class (TS2428).
+  interface ConfigurationBuilder<T = IndexedSection> {
     /**
      * Registers a command-line configuration source over `args` (typically
      * `process.argv.slice(2)`), optionally with `switchMappings` for
