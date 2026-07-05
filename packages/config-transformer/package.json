@@ -1,0 +1,51 @@
+{
+  "name": "@fnconfig/transformer",
+  "version": "0.0.0",
+  "description": "The @fnconfig ts-patch transformer: rewrites .withType<T>() on a ConfigurationBuilder into a generated .withSchema({...}) runtime schema literal at compile time.",
+  "keywords": [
+    "configuration",
+    "config",
+    "ioc",
+    "typescript",
+    "ts-patch",
+    "transformer",
+    "compiler"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fnioc/config.git",
+    "directory": "packages/config-transformer"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "moon run config-transformer:build",
+    "test": "moon run config-transformer:test",
+    "lint": "moon run config-transformer:lint"
+  },
+  "peerDependencies": {
+    "@fnconfig/config": "workspace:^",
+    "typescript": ">=5.2"
+  },
+  "devDependencies": {
+    "@fnconfig/config": "workspace:*",
+    "@fnconfig/core": "workspace:*",
+    "ts-patch": "^3.3.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
