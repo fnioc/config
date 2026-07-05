@@ -33,6 +33,7 @@ plugin or build step involved.
 | [`@fnconfig/json`](packages/config-json) | JSON file provider (`.addJsonFile()`). |
 | [`@fnconfig/env`](packages/config-env) | Environment variable provider (`.addEnvironmentVariables()`). |
 | [`@fnconfig/commandline`](packages/config-commandline) | Command-line argument provider (`.addCommandLine()`). |
+| [`@fnconfig/transformer`](packages/config-transformer) | ts-patch transformer: lowers `.withType<T>()` to a generated `.withSchema({...})` at compile time. |
 
 ## What's in the MVP — and what's deliberately not
 

@@ -1,0 +1,57 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+id: 'examples-with-transformer'
+layer: 'application'
+language: 'typescript'
+
+# A real external consumer: imports @fnconfig/config as a bare specifier and the
+# @fnconfig/transformer ts-patch plugin via workspace:* deps. `tspc` compiles
+# src -> dist and applies the transform (`.withType<AppConfig>()` ->
+# `.withSchema({...})`); `node` runs dist/main.js directly. config +
+# config-transformer must be built first — tspc loads the transformer plugin
+# from its dist and the emitted dist resolves @fnconfig/config at runtime.
+dependsOn:
+  - 'config'
+  - 'config-transformer'
+
+tasks:
+  build:
+    command: 'bun x tspc -p tsconfig.json'
+    deps:
+      - 'config:build'
+      - 'config-transformer:build'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+      - '/tsconfig.base.json'
+    outputs:
+      - 'dist'
+  test:
+    # Run the compiled example against the built dist of config + core and diff
+    # against the golden snapshot. Proof the transform ran AND the runtime schema
+    # coerced (Port a number, Ssl a boolean).
+    script: 'node dist/main.js > /tmp/fnconfig-with-transformer.out && diff -u expected.txt /tmp/fnconfig-with-transformer.out'
+    deps:
+      - 'build'
+      - 'config:build'
+      - 'core:build'
+    inputs:
+      - 'src/**/*'
+      - 'expected.txt'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    # `tspc --noEmit` type-checks the authored `.withType<T>()` form against the
+    # with-type-augment declaration (plain tsc would ignore the plugin, but the
+    # authored form type-checks either way; tspc keeps parity with build).
+    command: 'bun x tspc --noEmit -p tsconfig.json'
+    deps:
+      - 'config-transformer:build'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false

@@ -1,0 +1,54 @@
+# https://moonrepo.dev/docs/config/project
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+layer: 'library'
+language: 'typescript'
+
+# Build-time only. The transformer's RUNTIME bundle carries no @fnconfig import
+# (the "@fnconfig/config" reference it emits lives in a generated import-specifier
+# STRING, not an actual ESM import), so the emitted JS stays @fnconfig-free --
+# build.ts asserts it. src/ imports nothing from @fnconfig/*: it recognizes
+# ConfigurationBuilder by symbol name via the checker, hence no `dependsOn` on
+# config. The ts-patch e2e (test/e2e.test.ts) does need config + core dist, so
+# the `test` task depends on those builds.
+
+tasks:
+  build:
+    # Typecheck src first, then bundle: `tsc --noEmit` catches type errors
+    # before build.ts produces the dist artefacts (bun build does not typecheck).
+    script: 'bun x tsc --noEmit -p tsconfig.json && bun build.ts'
+    inputs:
+      - 'src/**/*'
+      - 'build.ts'
+      - 'rollup.dts.mjs'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - '/scripts/build-package.ts'
+    outputs:
+      - 'dist'
+  test:
+    # The ts-patch e2e loads the BUILT @fnconfig/transformer as a plugin and
+    # runs `node tspc`, which resolves the injected @fnconfig/config import and
+    # @fnconfig/core at runtime via their dist entry points. All three must be
+    # built first.
+    command: 'bun test'
+    deps:
+      - 'build'
+      - 'config:build'
+      - 'core:build'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+  lint:
+    # Widened tsconfig.lint.json includes test/**/*.
+    command: 'bun x tsc --noEmit -p tsconfig.lint.json'
+    inputs:
+      - 'src/**/*'
+      - 'test/**/*'
+      - 'tsconfig.json'
+      - 'tsconfig.lint.json'
+      - '/tsconfig.base.json'
+    options:
+      cache: false
