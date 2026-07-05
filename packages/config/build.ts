@@ -1,47 +1,23 @@
 // Build @fnconfig/config for publication.
 //
-// This repo standardized on `moduleResolution: bundler` + extensionless
-// relative imports (see /tsconfig.base.json). A plain `tsc` emit would leave
-// those specifiers extensionless in dist/, which plain Node ESM cannot
-// resolve — so every published package bundles instead:
+// Two JS entrypoints, two rolled .d.ts files:
 //
-//   1. dist/index.js   — `bun build` bundles the ESM entry into a single file
-//      with resolved specifiers. Core has no workspace deps and no real
-//      runtime deps, so nothing is externalized.
-//   2. dist/index.d.ts — rollup-plugin-dts rolls the public type surface into
-//      one declaration file.
+//   - src/index.ts            -> dist/index.js / dist/index.d.ts (the barrel).
+//   - src/with-type-augment.ts -> dist/with-type-augment.js /
+//     dist/with-type-augment.d.ts (the opt-in Tier 2 seam, NOT reachable from
+//     the barrel -- so it needs its own entrypoint or the `withType` prototype
+//     patch would never land in the published artifact).
+//
+// @fnconfig/core stays external; @rhombus-toolkit/proxy-base is deliberately
+// NOT external, so bun inlines it (its published ESM uses extensionless
+// relative imports that Node's ESM resolver rejects -- bundling resolves them).
 
-import { rmSync } from "node:fs";
-import { join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { buildPackage } from "../../scripts/build-package";
 
-const PKG_ROOT = import.meta.dir;
-const DIST = join(PKG_ROOT, "dist");
-const ENTRY = join(PKG_ROOT, "src", "index.ts");
-
-rmSync(DIST, { recursive: true, force: true });
-
-// 1. JS bundle — ESM, node target. Nothing external: core has no workspace or
-// real runtime deps to keep out.
-const js = await Bun.build({
-  entrypoints: [ENTRY],
-  outdir: DIST,
-  target: "node",
-  format: "esm",
+await buildPackage({
+  dir: import.meta.dir,
+  name: "@fnconfig/config",
+  entrypoints: ["src/index.ts", "src/with-type-augment.ts"],
+  external: ["@fnconfig/core"],
+  dtsConfigs: ["rollup.dts.mjs", "rollup.with-type-augment.dts.mjs"],
 });
-if (!js.success) {
-  for (const log of js.logs) {
-    console.error(log);
-  }
-  throw new Error("@fnconfig/config: bun build failed");
-}
-
-// 2. Rolled-up .d.ts — the whole public type surface in one file.
-const dts = spawnSync(
-  "bun",
-  ["x", "rollup", "-c", join(PKG_ROOT, "rollup.dts.mjs")],
-  { cwd: PKG_ROOT, stdio: "inherit" },
-);
-if (dts.status !== 0) {
-  throw new Error("@fnconfig/config: rollup d.ts bundling failed");
-}
