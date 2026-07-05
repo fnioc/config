@@ -1,39 +1,78 @@
 // The configuration abstraction types: the IConfiguration* interface family and
 // the ITryGetResult tuple type. Pure types -- zero runtime, zero imports.
 
-/// <summary>
-/// Represents a set of key/value application configuration properties.
-/// </summary>
+/**
+ * A node's subtree as a nested plain string object. A node that has children
+ * is a nested record (its own scalar value, if any, is dropped -- see
+ * {@link IConfiguration.toObject}); a pure leaf is its string value.
+ */
+export type DeepRecord = { readonly [key: string]: string | DeepRecord };
+
+/**
+ * The index-navigable Section type: an {@link IConfigurationSection} whose
+ * unknown string keys resolve to further sections, so `config.Server.Port`
+ * dot/bracket navigation type-checks.
+ *
+ * INLINE self-referential intersection by design -- routing the recursive
+ * self-reference through a generic alias trips TS2456 ("Type alias circularly
+ * references itself"). Real members (`value`, `get`, `getSection`, ...) win
+ * over the index signature; only genuinely-unknown keys resolve to
+ * `IndexedSection`. Under `noUncheckedIndexedAccess` the index-access site
+ * (`config.Server`) types as `IndexedSection | undefined` -- a conservative
+ * false-positive for navigation (runtime always returns a Section for a string
+ * key), by design. The typed path without that tax is a runtime schema
+ * (`ConfigurationBuilder.withSchema`), whose result has named keys and no
+ * index signature.
+ */
+export type IndexedSection = IConfigurationSection & {
+    readonly [key: string]: IndexedSection;
+};
+
+/**
+ * A set of key/value application configuration properties. Every value is a
+ * raw string unless explicitly coerced; navigation always yields a Section and
+ * leaf reads always yield the requested scalar type (no accessor returns a
+ * string for one input and a section for another).
+ */
 export interface IConfiguration {
-    /// <summary>
-    /// Gets or sets a configuration value.
-    /// </summary>
-    /// <param name="key">The configuration key.</param>
-    /// <returns>The configuration value.</returns>
-    get(key: string): string | undefined;
+    /** This node's own value (undefined on the root, or when absent). */
+    readonly value: string | undefined;
+
+    /** The raw string at a flat colon-delimited path (undefined if absent). */
+    get(path: string): string | undefined;
+
+    /** A typed leaf via a caller-supplied factory (undefined if the path is absent). */
+    get<T>(path: string, factory: (value: string) => T): T | undefined;
+
+    /**
+     * Coerces a leaf to a finite number. Returns `dflt` (or undefined) when the
+     * path is absent; THROWS when the path is present but not a finite number.
+     */
+    getNum(path: string): number | undefined;
+    getNum(path: string, dflt: number): number;
+
+    /**
+     * Coerces a leaf to a boolean, LIBERAL and case-insensitive (true/1/yes/on
+     * -> true, false/0/no/off -> false). Returns `dflt` (or undefined) when
+     * absent; THROWS when present but unrecognized.
+     */
+    getBool(path: string): boolean | undefined;
+    getBool(path: string, dflt: boolean): boolean;
+
+    /** Writes a descendant key (index-based writes are not supported). */
     set(key: string, value: string): this;
-    /// <summary>
-    /// Gets a configuration sub-section with the specified key.
-    /// </summary>
-    /// <param name="key">The key of the configuration section.</param>
-    /// <returns>The <see cref="IConfigurationSection"/>.</returns>
-    /// <remarks>
-    ///     This method will never return <c>null</c>. If no matching sub-section is found with the specified key,
-    ///     an empty <see cref="IConfigurationSection"/> will be returned.
-    /// </remarks>
+
+    /**
+     * A sub-section with the specified key. Never returns `null`: a missing key
+     * yields an empty {@link IConfigurationSection}.
+     */
     getSection(key: string): IConfigurationSection;
 
-    /// <summary>
-    /// Gets the immediate descendant configuration sub-sections.
-    /// </summary>
-    /// <returns>The configuration sub-sections.</returns>
+    /** The immediate descendant configuration sub-sections. */
     getChildren(): Iterable<IConfigurationSection>;
 
-    /// <summary>
-    /// Returns a <see cref="IChangeToken"/> that can be used to observe when this configuration is reloaded.
-    /// </summary>
-    /// <returns>An <see cref="IChangeToken"/> token if this provider supports change tracking; otherwise, <see langword="null" />.</returns>
-    // getReloadToken(): IChangeToken;
+    /** This node's subtree as a nested plain string object. */
+    toObject(): DeepRecord;
 }
 /// <summary>
 /// Represents a type used to build application configuration.
