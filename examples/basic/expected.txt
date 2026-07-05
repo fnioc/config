@@ -1,5 +1,5 @@
 === @fnconfig/config -- basic ===
-server: {"host":"10.0.0.5","port":8080,"ssl":true}
-database primary: {"host":"db-primary.internal","database":"app","poolSize":10}
-database replica: {"host":"db-replica.internal","database":"app","poolSize":5}
-looked up directly: Server:Host=10.0.0.5, Server:Port=8080
+server: {"Host":"10.0.0.5","Port":8080,"Ssl":true}
+database primary: {"Host":"db-primary.internal","Database":"app","PoolSize":10}
+database replica: {"Host":"db-replica.internal","Database":"app","PoolSize":5}
+raw Server:Host=10.0.0.5, getNum(Server:Port)=8080

@@ -2,7 +2,7 @@
   "name": "@fnconfig-examples/basic",
   "private": true,
   "version": "0.0.0",
-  "description": "Standalone runnable @fnconfig/config example: layered configuration sources (in-memory, JSON, environment variables, command-line) bound into typed values via bindConfig + a hand-written SchemaFor<T>. No dependency-injection framework, no compiler transformer.",
+  "description": "Standalone runnable @fnconfig/config example: layered configuration sources (in-memory, JSON, environment variables, command-line) read via Tier 1 withSchema coercion and Tier 0 on-demand helpers. No dependency-injection framework, no compiler transformer.",
   "license": "MIT",
   "type": "module",
   "scripts": {
