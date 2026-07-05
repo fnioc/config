@@ -24,10 +24,10 @@ export class EnvironmentVariablesConfigurationProvider extends ConfigurationProv
   public override load(): void {
     this.data.clear();
 
-    const { prefix, variableNameTransformation } = this.#source;
+    const { prefix, variableNameTransformation, env } = this.#source;
     const foldedPrefix = prefix?.toLowerCase();
 
-    for (const [rawName, value] of Object.entries(process.env)) {
+    for (const [rawName, value] of Object.entries(env)) {
       if (value === undefined) {
         continue;
       }

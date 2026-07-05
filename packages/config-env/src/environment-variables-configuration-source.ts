@@ -27,6 +27,13 @@ export interface EnvironmentVariablesConfigurationSourceOptions {
    * a section-delimited key in an environment variable name.
    */
   variableNameTransformation?: (name: string) => string;
+  /**
+   * The environment map to read. Defaults to `process.env`. Injectable so
+   * `load()` is pure with respect to an explicit map -- tests (and any caller
+   * wanting a hermetic source) pass their own instead of mutating the ambient
+   * `process.env`.
+   */
+  env?: Record<string, string | undefined>;
 }
 
 /** Default {@link EnvironmentVariablesConfigurationSourceOptions.variableNameTransformation}: `__` -> `:`. */
@@ -44,10 +51,13 @@ export class EnvironmentVariablesConfigurationSource implements IConfigurationSo
   public prefix?: string;
   /** Applied to each raw variable name before prefix matching. */
   public variableNameTransformation: (name: string) => string;
+  /** The environment map read at load time (defaults to `process.env`). */
+  public env: Record<string, string | undefined>;
 
   public constructor(options?: EnvironmentVariablesConfigurationSourceOptions) {
     this.prefix = options?.prefix;
     this.variableNameTransformation = options?.variableNameTransformation ?? defaultVariableNameTransformation;
+    this.env = options?.env ?? process.env;
   }
 
   public build(_builder: IConfigurationBuilder): IConfigurationProvider {
