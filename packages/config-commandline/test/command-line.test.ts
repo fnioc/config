@@ -76,6 +76,34 @@ describe("CommandLineConfigurationProvider -- long form (--Key)", () => {
     });
   });
 
+  test("a valueless switch followed by a registered short switch is boolean-true, not corrupted", () => {
+    // `--Verbose -p 8080` with `-p` mapped: without the extended guard,
+    // `--Verbose` swallows `-p` as its value and `8080` becomes an unmapped
+    // positional -- Port is lost. The registered short switch `-p` cannot be a
+    // value, so `--Verbose` is a valueless boolean flag.
+    expect(load(["--Verbose", "-p", "8080"], { "-p": "Port" })).toEqual({
+      Verbose: "true",
+      Port: "8080",
+    });
+  });
+
+  test("a valueless switch followed by any dash-led non-number token is boolean-true", () => {
+    // `--Key -x`: `-x` is dash-led and not a negative number, so it can't be
+    // `--Key`'s value; `--Key` is a valueless boolean. (`-x` then parses as an
+    // unmapped short switch and throws -- unreachable positionally; use
+    // `--Key=-x` for a literal dash-led value.)
+    expect(() => load(["--Key", "-x"])).toThrow(/-x/);
+  });
+
+  test("a negative number IS consumed as the switch value (not treated as a flag)", () => {
+    expect(load(["--Offset", "-5"])).toEqual({ Offset: "-5" });
+    expect(load(["--Ratio", "-3.14"])).toEqual({ Ratio: "-3.14" });
+  });
+
+  test("a dash-led literal value is reachable via the = form", () => {
+    expect(load(["--Key=-x"])).toEqual({ Key: "-x" });
+  });
+
   test('a lone "--" terminates option parsing (standard argv convention)', () => {
     // `--` is the end-of-options marker: everything after it is positional
     // (and this source ignores positionals). It must not be treated as an
