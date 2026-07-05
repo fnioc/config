@@ -1,0 +1,24 @@
+{
+  "name": "@fnconfig-examples/with-transformer",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Runnable @fnconfig/config example using the @fnconfig/transformer ts-patch plugin: .withType<T>() lowered to a generated .withSchema({...}) at compile time.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "moon run examples-with-transformer:build",
+    "start": "moon run examples-with-transformer:build && node dist/main.js",
+    "test": "moon run examples-with-transformer:test",
+    "lint": "moon run examples-with-transformer:lint"
+  },
+  "dependencies": {
+    "@fnconfig/config": "workspace:*",
+    "@fnconfig/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@fnconfig/transformer": "workspace:*",
+    "@types/node": "^24.13.2",
+    "ts-patch": "^3.3.0",
+    "typescript": "^5.9.0"
+  }
+}
